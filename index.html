@@ -3191,7 +3191,13 @@ const mountChats = (chatContainer) => {
 const mountGungun = (gunContainer) => {
     // iframe을 띄우지 않고 지정한 URL로 현재 페이지를 직접 이동시킵니다.
     window.location.href = "https://ktxsubway-bit.github.io/zsdjfka/";
-};      
+};     
+
+
+const mountCarcar = (carContainer) => {
+    // iframe을 띄우지 않고 지정한 URL로 현재 페이지를 직접 이동시킵니다.
+    window.location.href = "https://ktxsubway-bit.github.io/alfa/";
+}; 
 
         // ==========================================
         // 메인 데이터 & 라우팅 (전체 28개 게임 - 한글/영어/숫자순 정렬)
@@ -3234,7 +3240,8 @@ const mountGungun = (gunContainer) => {
   // 3. 숫자 (오름차순)
   { id: 'clicker',    title: '10초 광클',           icon: 'mouse-pointer-click', color: 'bg-fuchsia-100 text-fuchsia-600', mount: mountClicker },
   { id: '2048',       title: '2048',               icon: 'layout-grid',          color: 'bg-amber-100 text-amber-800',    mount: mount2048 },
-  { id: 'jump3d',     title: '3D 점프맵',           icon: 'person-standing',      color: 'bg-teal-100 text-teal-600',      mount: mount3DJumpMap },          
+  { id: 'jump3d',     title: '3D 점프맵',           icon: 'person-standing',      color: 'bg-teal-100 text-teal-600',      mount: mount3DJumpMap }, 
+  { id: 'carContainer',     title: '4000KM/H! 무한 드리프트 (알파)',           icon: 'person-standing',      color: 'bg-teal-100 text-teal-600',      mount: mountCarcar },           
 ];
 
 
