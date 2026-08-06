@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+w<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -322,7 +322,7 @@ window.updateNoticeDisplay = (text) => {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
-                    document.getElementById('user-info').innerText = `접속 ID: ${user.uid.substring(0, 8)}... (클라우드 연결됨)`;
+                    document.getElementById('user-info').innerText = `Copyright © 2026 RICEJAMJAM studio. All rights reserved.`;
                    
                     onSnapshot(noticeRef, (docSnap) => {
                         if (docSnap.exists()) {
