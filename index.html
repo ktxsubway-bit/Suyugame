@@ -191,65 +191,85 @@
         document.getElementById('admin-error')?.classList.add('hidden');
     };
 
-    window.attemptAdminLogin = () => {
-    const pw = document.getElementById('admin-pw')?.value;
-    const otp = document.getElementById('admin-otp')?.value?.trim();
+   window.attemptAdminLogin = async () => {
+    const pw = document.getElementById('admin-pw').value;
+    const userOtp = document.getElementById('admin-otp')?.value?.trim();
+    const errorEl = document.getElementById('admin-error');
 
-    // 1. 비밀번호 일치 여부 확인
+    // 1. 비밀번호 확인
     if (typeof CONFIG === 'undefined' || pw !== CONFIG.ADMIN_PASSWORD) {
-        document.getElementById('admin-error').innerText = "비밀번호가 틀렸습니다.";
-        document.getElementById('admin-error').classList.remove('hidden');
-        return; // 실패 시 여기서 실행 중단
+        if (errorEl) {
+            errorEl.innerText = "비밀번호가 올바르지 않습니다.";
+            errorEl.classList.remove('hidden');
+        }
+        return;
     }
 
-    // 2. OTP 입력 유무 확인
-    if (!otp) {
-        alert('구글 OTP 6자리 번호를 입력해 주세요.');
-        return; // 미입력 시 중단
-    }
-
-    // 3. OTPAuth 라이브러리 로드 여부 확인
-    if (typeof OTPAuth === 'undefined') {
-        alert('OTP 인증 라이브러리가 로드되지 않았습니다. index.html의 CDN을 확인하세요.');
-        return; // 라이브러리 없으면 통과시키지 않고 즉시 중단
+    // 2. OTP 입력 여부 확인
+    if (!userOtp || userOtp.length !== 6) {
+        if (errorEl) {
+            errorEl.innerText = "6자리 OTP 번호를 입력해주세요.";
+            errorEl.classList.remove('hidden');
+        }
+        return;
     }
 
     try {
-        const totp = new OTPAuth.TOTP({
-            issuer: "MyApp",
-            label: "Admin",
-            algorithm: "SHA1",
-            digits: 6,
-            period: 30,
-            secret: OTPAuth.Secret.fromBase32(CONFIG.OTP_SECRET)
-        });
+        // 3. 파이어베이스 Firestore에서 현재 OTP 번호 조회 (v11 모듈러 방식 적용)
+        const docRef = doc(db, "system", "current_otp");
+        const docSnap = await getDoc(docRef); // ⭕ db.collection 대신 doc() + getDoc() 사용
 
-        // OTP 검증 진행
-        // validate 함수는 실패 시 null을 반환합니다.
-        const delta = totp.validate({ token: otp, window: 1 });
-
-        // OTP 검증 실패한 경우 (delta가 null이거나 undefined인 경우)
-        if (delta === null || delta === undefined) {
-            alert('OTP 번호가 올바르지 않거나 만료되었습니다.');
-            return; // ❌ 실패했으므로 로그인시키지 않고 여기서 함수 종료!
+        if (!docSnap.exists()) { // ⭕ exists는 메서드가 아닌 함수 방식: docSnap.exists()
+            if (errorEl) {
+                errorEl.innerText = "OTP 정보를 가져올 수 없습니다.";
+                errorEl.classList.remove('hidden');
+            }
+            return;
         }
 
-        // 4. 비밀번호와 OTP가 모두 완벽히 맞은 경우에만 로그인 성공 처리
-        window.isAdmin = true;
-        window.closeAdminLogin();
-        document.getElementById('admin-edit-btn')?.classList.remove('hidden');
-        if (typeof window.showAlert === 'function') {
-            window.showAlert('관리자로 로그인되었습니다.');
+        const data = docSnap.data();
+        const correctOtp = String(data.code); // 숫자로 들어올 가능성에 대비해 String 변환
+        const updatedAt = data.updatedAt ? data.updatedAt.toDate() : new Date();
+
+        // 4. OTP 만료 검사 (6분 이상 경과 시 차단)
+        const diffMinutes = (new Date() - updatedAt) / (1000 * 60);
+        if (diffMinutes > 6) {
+            if (errorEl) {
+                errorEl.innerText = "OTP가 만료되었습니다. 새 번호를 확인해주세요.";
+                errorEl.classList.remove('hidden');
+            }
+            return;
+        }
+
+        // 5. 입력한 OTP 번호 검증
+        if (userOtp === correctOtp) {
+            if (errorEl) errorEl.classList.add('hidden');
+            
+            window.isAdmin = true;
+            window.closeAdminLogin();
+            document.getElementById('admin-edit-btn')?.classList.remove('hidden');
+            
+            if (typeof window.showAlert === 'function') {
+                window.showAlert('인증 성공! 이제 공지사항을 수정할 수 있습니다.');
+            } else {
+                alert('인증 성공! 이제 공지사항을 수정할 수 있습니다.');
+            }
         } else {
-            alert('관리자로 로그인되었습니다.');
+            if (errorEl) {
+                errorEl.innerText = "OTP 번호가 올바르지 않습니다.";
+                errorEl.classList.remove('hidden');
+            }
         }
 
     } catch (error) {
-        console.error('OTP 인증 실패/오류:', error);
-        alert('OTP 인증 중 오류가 발생했습니다. (시크릿 키 형식 확인)');
-        // ❌ 에러 발생 시 절대 로그인 통과시키지 않음
+        console.error("OTP 인증 처리 중 오류 발생:", error);
+        if (errorEl) {
+            errorEl.innerText = "인증 중 오류가 발생했습니다.";
+            errorEl.classList.remove('hidden');
+        }
     }
 };
+    
     // 4. 공지사항 수정 모달 제어 함수들 (Firebase 연동용)
     window.openAdminEdit = () => {
         if (!window.isAdmin) return;
@@ -282,7 +302,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // 파이어베이스 설정값
         const firebaseConfig = {
