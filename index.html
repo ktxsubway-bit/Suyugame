@@ -185,24 +185,35 @@
     };
 
     window.attemptAdminLogin = () => {
-    const pw = document.getElementById('admin-pw')?.value;
-    
-    // 💡 하드코딩된 문자열 대신 CONFIG 객체의 값을 비교합니다.
-    if (pw === CONFIG.ADMIN_PASSWORD) {
+    const pw = document.getElementById('admin-pw').value;
+    const otpInput = document.getElementById('admin-otp')?.value; // OTP 입력 input element
+
+    // 1. 비밀번호 먼저 검증
+    if (typeof CONFIG === 'undefined' || pw !== CONFIG.ADMIN_PASSWORD) {
+        document.getElementById('admin-error').classList.remove('hidden');
+        return;
+    }
+
+    // 2. OTP 생성 객체 설정
+    const totp = new OTPAuth.TOTP({
+        issuer: "MyApp",
+        label: "Admin",
+        algorithm: "SHA1",
+        digits: 6,
+        period: 30,
+        secret: OTPAuth.Secret.fromBase32(CONFIG.CONFIG_SECRET || CONFIG.OTP_SECRET)
+    });
+
+    // 3. 입력한 OTP 검증 (window: 1 은前後 30초 시간 오차 허용)
+    const delta = totp.validate({ token: otpInput, window: 1 });
+
+    if (delta !== null) {
         window.isAdmin = true;
         window.closeAdminLogin();
-        
-        // 공지 수정 버튼 노출
-        const editBtn = document.getElementById('admin-edit-btn');
-        if (editBtn) editBtn.classList.remove('hidden');
-        
-        if (typeof window.showAlert === 'function') {
-            window.showAlert('인증 성공! 이제 공지사항을 수정할 수 있습니다.');
-        } else {
-            alert('인증 성공! 이제 관리자 기능을 사용할 수 있습니다.');
-        }
+        document.getElementById('admin-edit-btn').classList.remove('hidden');
+        window.showAlert('비밀번호 및 구글 OTP 인증 성공!');
     } else {
-        document.getElementById('admin-error')?.classList.remove('hidden');
+        alert('OTP 번호가 올바르지 않거나 만료되었습니다.');
     }
 };
 
