@@ -285,21 +285,31 @@
 
     <!-- Firebase 및 로직 스크립트 -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 파이어베이스 설정값
-        const firebaseConfig = {
-          apiKey: "AIzaSyA9CfIdZ0DNkvUdOk3-GlMlHV_FbAFNnGk",
-          authDomain: "hasi-game.firebaseapp.com",
-          projectId: "hasi-game",
-          storageBucket: "hasi-game.firebasestorage.app",
-          messagingSenderId: "48274416774",
-          appId: "1:48274416774:web:c15811462fc618ebdd9d07",
-          measurementId: "G-FT9MYSD4GW"
-        };
+    // 파이어베이스 설정값
+    const firebaseConfig = {
+        apiKey: "AIzaSyA9CfIdZ0DNkvUdOk3-GlMlHV_FbAFNnGk",
+        authDomain: "hasi-game.firebaseapp.com",
+        databaseURL: "https://hasi-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "hasi-game",
+        storageBucket: "hasi-game.firebasestorage.app",
+        messagingSenderId: "48274416774",
+        appId: "1:48274416774:web:c15811462fc618ebdd9d07",
+        measurementId: "G-FT9MYSD4GW"
+    };
 
+    // 파이어베이스 초기화 (v11 최신 문법)
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 다른 일반 <script> 태그나 함수에서 db에 접근할 수 있도록 전역 변수 설정
+    window.db = db;
+    window.auth = auth;
+        
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         // 전역 상태
