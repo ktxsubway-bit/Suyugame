@@ -185,38 +185,48 @@
     };
 
     window.attemptAdminLogin = () => {
-    const pw = document.getElementById('admin-pw').value;
-    const otpInput = document.getElementById('admin-otp')?.value; // OTP 입력 input element
+    const pw = document.getElementById('admin-pw')?.value;
+    const otpInput = document.getElementById('admin-otp')?.value;
 
-    // 1. 비밀번호 먼저 검증
+    // 1. 비밀번호 검증
     if (typeof CONFIG === 'undefined' || pw !== CONFIG.ADMIN_PASSWORD) {
         document.getElementById('admin-error').classList.remove('hidden');
         return;
     }
 
-    // 2. OTP 생성 객체 설정
-    const totp = new OTPAuth.TOTP({
-        issuer: "MyApp",
-        label: "Admin",
-        algorithm: "SHA1",
-        digits: 6,
-        period: 30,
-        secret: OTPAuth.Secret.fromBase32(CONFIG.CONFIG_SECRET || CONFIG.OTP_SECRET)
-    });
+    // 2. OTP 입력 유무 검증 (빈 값일 경우 진행 차단)
+    if (!otpInput || otpInput.trim() === '') {
+        alert('구글 OTP 번호 6자리를 입력해 주세요.');
+        return;
+    }
 
-    // 3. 입력한 OTP 검증 (window: 1 은前後 30초 시간 오차 허용)
-    const delta = totp.validate({ token: otpInput, window: 1 });
+    try {
+        // 3. OTP 객체 생성 (시크릿 키 참조 수정)
+        const totp = new OTPAuth.TOTP({
+            issuer: "MyApp",
+            label: "Admin",
+            algorithm: "SHA1",
+            digits: 6,
+            period: 30,
+            secret: OTPAuth.Secret.fromBase32(CONFIG.OTP_SECRET)
+        });
 
-    if (delta !== null) {
-        window.isAdmin = true;
-        window.closeAdminLogin();
-        document.getElementById('admin-edit-btn').classList.remove('hidden');
-        window.showAlert('비밀번호 및 구글 OTP 인증 성공!');
-    } else {
-        alert('OTP 번호가 올바르지 않거나 만료되었습니다.');
+        // 4. OTP 번호 검증 (앞뒤 30초 오차 허용)
+        const delta = totp.validate({ token: otpInput.trim(), window: 1 });
+
+        if (delta !== null) {
+            window.isAdmin = true;
+            window.closeAdminLogin();
+            document.getElementById('admin-edit-btn').classList.remove('hidden');
+            window.showAlert('비밀번호 및 구글 OTP 인증 성공!');
+        } else {
+            alert('OTP 번호가 올바르지 않거나 만료되었습니다.');
+        }
+    } catch (error) {
+        console.error('OTP 인증 오류:', error);
+        alert('OTP 인증 중 오류가 발생했습니다. (시크릿 키 형식 확인 필요)');
     }
 };
-
     // 4. 공지사항 수정 모달 제어 함수들 (Firebase 연동용)
     window.openAdminEdit = () => {
         if (!window.isAdmin) return;
