@@ -5,18 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>수유게임</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
-    
     <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons (CDN) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Three.js (CDN) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <!-- [신규 추가] Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.4/otpauth.umd.min.js"></script>
     <script src="config.js"></script>
     <style>
         /* 커스텀 스타일 */
@@ -154,19 +149,20 @@
 </div>
 
 <!-- ========================================== -->
-<!-- 1. UI 및 단축키 제어 스크립트 (일반 Script) -->
+<!-- 3. JavaScript: 핵심 로직 정의 (모듈 스크립트 연동 대비) -->
 <!-- ========================================== -->
 <script>
-    // 전역 상태 관리
+    // 전역 상태 관리 (기존에 이미 선언되어 있다면 초기화 코드 위치 유의)
     if (window.isAdmin === undefined) window.isAdmin = false;
 
-    // 단축키 이벤트 리스너 (Delete, \, ₩ 키로 관리자 모달 호출)
+    // 1. 단축키 이벤트 리스너 (중복 방지를 위해 단 한 번만 등록)
     if (!window.hasAdminShortcutRegistered) {
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Delete' || e.key === '\\' || e.key === '₩') {
                 const loginModal = document.getElementById('admin-login-modal');
                 const editModal = document.getElementById('admin-edit-modal');
                 
+                // 모달들이 모두 닫혀있을 때만 동작
                 if (loginModal && loginModal.classList.contains('hidden') && (!editModal || editModal.classList.contains('hidden'))) {
                     e.preventDefault();
                     
@@ -182,32 +178,85 @@
         window.hasAdminShortcutRegistered = true;
     }
 
-    // 비밀번호 입력창 엔터 키 이벤트
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('admin-pw')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') window.attemptAdminLogin();
-        });
-        document.getElementById('admin-otp')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') window.attemptAdminLogin();
-        });
+    // 2. 비밀번호 입력창 엔터 키 이벤트 등록
+    document.getElementById('admin-pw')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') window.attemptAdminLogin();
     });
 
-    // 로그인 모달 닫기
+    // 3. 로그인 모달 제어 함수들 (window에 명시적으로 바인딩)
     window.closeAdminLogin = () => {
         document.getElementById('admin-login-modal')?.classList.add('hidden');
         const pwInput = document.getElementById('admin-pw');
-        const otpInput = document.getElementById('admin-otp');
         if (pwInput) pwInput.value = '';
-        if (otpInput) otpInput.value = '';
         document.getElementById('admin-error')?.classList.add('hidden');
     };
 
-    // 공지사항 수정 모달 제어
+    window.attemptAdminLogin = () => {
+    const pw = document.getElementById('admin-pw')?.value;
+    const otp = document.getElementById('admin-otp')?.value?.trim();
+
+    // 1. 비밀번호 일치 여부 확인
+    if (typeof CONFIG === 'undefined' || pw !== CONFIG.ADMIN_PASSWORD) {
+        document.getElementById('admin-error').innerText = "비밀번호가 틀렸습니다.";
+        document.getElementById('admin-error').classList.remove('hidden');
+        return; // 실패 시 여기서 실행 중단
+    }
+
+    // 2. OTP 입력 유무 확인
+    if (!otp) {
+        alert('구글 OTP 6자리 번호를 입력해 주세요.');
+        return; // 미입력 시 중단
+    }
+
+    // 3. OTPAuth 라이브러리 로드 여부 확인
+    if (typeof OTPAuth === 'undefined') {
+        alert('OTP 인증 라이브러리가 로드되지 않았습니다. index.html의 CDN을 확인하세요.');
+        return; // 라이브러리 없으면 통과시키지 않고 즉시 중단
+    }
+
+    try {
+        const totp = new OTPAuth.TOTP({
+            issuer: "MyApp",
+            label: "Admin",
+            algorithm: "SHA1",
+            digits: 6,
+            period: 30,
+            secret: OTPAuth.Secret.fromBase32(CONFIG.OTP_SECRET)
+        });
+
+        // OTP 검증 진행
+        // validate 함수는 실패 시 null을 반환합니다.
+        const delta = totp.validate({ token: otp, window: 1 });
+
+        // OTP 검증 실패한 경우 (delta가 null이거나 undefined인 경우)
+        if (delta === null || delta === undefined) {
+            alert('OTP 번호가 올바르지 않거나 만료되었습니다.');
+            return; // ❌ 실패했으므로 로그인시키지 않고 여기서 함수 종료!
+        }
+
+        // 4. 비밀번호와 OTP가 모두 완벽히 맞은 경우에만 로그인 성공 처리
+        window.isAdmin = true;
+        window.closeAdminLogin();
+        document.getElementById('admin-edit-btn')?.classList.remove('hidden');
+        if (typeof window.showAlert === 'function') {
+            window.showAlert('관리자로 로그인되었습니다.');
+        } else {
+            alert('관리자로 로그인되었습니다.');
+        }
+
+    } catch (error) {
+        console.error('OTP 인증 실패/오류:', error);
+        alert('OTP 인증 중 오류가 발생했습니다. (시크릿 키 형식 확인)');
+        // ❌ 에러 발생 시 절대 로그인 통과시키지 않음
+    }
+};
+    // 4. 공지사항 수정 모달 제어 함수들 (Firebase 연동용)
     window.openAdminEdit = () => {
         if (!window.isAdmin) return;
         const editModal = document.getElementById('admin-edit-modal');
         const noticeInput = document.getElementById('notice-input');
         
+        // 메인 화면 공지 텍스트가 있다면 불러와서 textarea에 미리 넣어줍니다.
         const currentNoticeText = document.getElementById('current-notice-text')?.innerText || window.currentNotice || '';
         if (noticeInput) noticeInput.value = currentNoticeText;
         
@@ -217,259 +266,289 @@
     window.closeAdminEdit = () => {
         document.getElementById('admin-edit-modal')?.classList.add('hidden');
     };
+
+    // ※ Firebase 저장 로직 연동을 위해 window에 비어있는 함수 틀을 제공 (필요시 하단 모듈 스크립트에서 덮어쓰기 가능)
+    if (typeof window.saveNotice !== 'function') {
+        window.saveNotice = () => {
+            const text = document.getElementById('notice-input')?.value;
+            console.log('공지 저장 시도:', text);
+            // 이 자리에 원래 구현해두신 Firebase Firestore/RealtimeDB 실시간 업데이트 로직을 그대로 유지하시면 됩니다.
+            // 성공 후에는 window.closeAdminEdit()를 호출하세요.
+        };
+    }
 </script>
 
-<!-- ========================================== -->
-<!-- 2. Firebase 초기화 및 OTP 검증 (Module Script) -->
-<!-- ========================================== -->
-<!-- ========================================== -->
-<!-- 핵심 로직 및 Firebase 통합 스크립트 (Module) -->
-<!-- ========================================== -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- Firebase 및 로직 스크립트 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 1. 파이어베이스 설정 및 초기화
-    const firebaseConfig = {
-        apiKey: "AIzaSyA9CfIdZ0DNkvUdOk3-GlMlHV_FbAFNnGk",
-        authDomain: "hasi-game.firebaseapp.com",
-        databaseURL: "https://hasi-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "hasi-game",
-        storageBucket: "hasi-game.firebasestorage.app",
-        messagingSenderId: "48274416774",
-        appId: "1:48274416774:web:c15811462fc618ebdd9d07",
-        measurementId: "G-FT9MYSD4GW"
-    };
+        // 파이어베이스 설정값
+        const firebaseConfig = {
+          apiKey: "AIzaSyA9CfIdZ0DNkvUdOk3-GlMlHV_FbAFNnGk",
+          authDomain: "hasi-game.firebaseapp.com",
+          projectId: "hasi-game",
+          storageBucket: "hasi-game.firebasestorage.app",
+          messagingSenderId: "48274416774",
+          appId: "1:48274416774:web:c15811462fc618ebdd9d07",
+          measurementId: "G-FT9MYSD4GW"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    window.db = db;
-    window.auth = auth;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-    // 2. 전역 변수 설정 (db, auth 중복 선언 제거됨)
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    window.currentNotice = "하시";
-    window.isAdmin = false;
-    let currentUser = null;
-    let noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main_notice');
+        // 전역 상태
+        window.currentNotice = "하시";
+        window.isAdmin = false;
+        window.currentCleanup = null;
+        let currentUser = null;
+        let db = null;
+        let noticeRef = null;
+        let auth = null;
 
-    // 3. 공통 UI 헬퍼 함수
-    window.showAlert = (msg) => {
-        const toast = document.getElementById('toast-message');
-        if(!toast) return alert(msg);
-        toast.textContent = msg;
-        toast.classList.remove('hidden');
-        setTimeout(() => toast.classList.remove('opacity-0'), 10);
-        setTimeout(() => {
-            toast.classList.add('opacity-0');
-            setTimeout(() => toast.classList.add('hidden'), 300);
-        }, 3000);
-    };
+        // 공지사항 표시 업데이트 함수 (길면 스크롤)
+        window.updateNoticeDisplay = (text) => {
+            const container = document.getElementById('notice-container');
+            const textEl = document.getElementById('notice-text');
+            if(!container || !textEl) return;
+           
+            textEl.textContent = text;
+            textEl.classList.remove('scrolling-text');
+            textEl.style.paddingLeft = '0';
+           
+            requestAnimationFrame(() => {
+                if (textEl.scrollWidth > container.clientWidth) {
+                    textEl.classList.add('scrolling-text');
+                    textEl.style.paddingLeft = '100%';
+                }
+            });
+        };
 
-    window.updateNoticeDisplay = (text) => {
-        const container = document.getElementById('notice-container');
-        const textEl = document.getElementById('notice-text');
-        if(!container || !textEl) return;
-        
-        textEl.textContent = text;
-        textEl.classList.remove('scrolling-text');
-        textEl.style.paddingLeft = '0';
-        
-        requestAnimationFrame(() => {
-            if (textEl.scrollWidth > container.clientWidth) {
-                textEl.classList.add('scrolling-text');
-                textEl.style.paddingLeft = '100%';
-            }
+        window.addEventListener('resize', () => {
+            if(window.currentNotice) window.updateNoticeDisplay(window.currentNotice);
         });
-    };
 
-    const showMenu = () => {
-        const overlay = document.getElementById('loading-overlay');
-        const menuScreen = document.getElementById('menu-screen');
-        if(overlay) {
-            overlay.classList.add('opacity-0');
-            setTimeout(() => overlay.classList.add('hidden'), 300);
+        // 알림 메시지 (토스트) 함수
+        window.showAlert = (msg) => {
+            const toast = document.getElementById('toast-message');
+            toast.textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.remove('opacity-0'), 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        };
+
+        // 화면 전환 헬퍼
+        const showMenu = () => {
+            document.getElementById('loading-overlay').classList.add('opacity-0');
+            setTimeout(() => {
+                document.getElementById('loading-overlay').classList.add('hidden');
+            }, 300);
+            document.getElementById('menu-screen').classList.remove('hidden');
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main_notice');
+
+            const initAuth = async () => {
+                try {
+                    await signInAnonymously(auth);
+                } catch(e) {
+                    console.warn("Firebase 익명 로그인 에러 (로컬 모드로 진행합니다):", e.message);
+                    showMenu();
+                }
+            };
+           
+            // 인증 상태 감시 및 데이터 동기화
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('user-info').innerText = `접속 ID: ${user.uid.substring(0, 8)}... (클라우드 연결됨)`;
+                   
+                    onSnapshot(noticeRef, (docSnap) => {
+                        if (docSnap.exists()) {
+                            window.currentNotice = docSnap.data().text;
+                            window.updateNoticeDisplay(window.currentNotice);
+                        }
+                    }, (error) => {
+                        console.warn("Firestore 규칙을 'allow read, write: if true;'로 설정하면 정상 동기화됩니다.");
+                    });
+                   
+                    showMenu();
+                }
+            });
+
+            initAuth();
+            window.updateNoticeDisplay(window.currentNotice); // 초기 공지 표시
+
+        } catch(e) {
+            console.error("Firebase 초기화 에러:", e);
+            showMenu();
         }
-        if(menuScreen) menuScreen.classList.remove('hidden');
-    };
 
-    // 4. 리사이즈 및 전체화면 이벤트
-    window.addEventListener('resize', () => {
-        if(window.currentNotice) window.updateNoticeDisplay(window.currentNotice);
-    });
+        // ==========================================
+        // 기본 UI 및 관리자 기능
+        // ==========================================
+        window.toggleFullScreen = () => {
+            if (!document.fullscreenElement) {
+                if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e=>console.log(e));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        };
 
-    window.toggleFullScreen = () => {
-        if (!document.fullscreenElement) {
-            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(e=>console.log(e));
-        } else {
-            if (document.exitFullscreen) document.exitFullscreen();
-        }
-    };
-
-    document.addEventListener('fullscreenchange', () => {
-        const icon = document.getElementById('fs-icon-global');
-        if(icon) {
+        document.addEventListener('fullscreenchange', () => {
+            const icon = document.getElementById('fs-icon-global');
             if (document.fullscreenElement) icon.setAttribute('data-lucide', 'minimize');
             else icon.setAttribute('data-lucide', 'maximize');
             lucide.createIcons();
-        }
-    });
+        });
 
-    // 5. 파이어베이스 인증 및 공지사항 실시간 감지
-    const initAuth = async () => {
-        try {
-            await signInAnonymously(auth);
-        } catch(e) {
-            console.warn("Firebase 익명 로그인 에러 (로컬 모드):", e.message);
-            showMenu();
-        }
-    };
+        // ￦ 또는 Delete 키 이벤트
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete' || e.key === '\\' || e.key === '₩') {
+                const loginModal = document.getElementById('admin-login-modal');
+                const editModal = document.getElementById('admin-edit-modal');
+                if (loginModal.classList.contains('hidden') && editModal.classList.contains('hidden')) {
+                    e.preventDefault();
+                    if (!window.isAdmin) {
+                        loginModal.classList.remove('hidden');
+                        setTimeout(() => document.getElementById('admin-pw').focus(), 100);
+                    } else {
+                        window.openAdminEdit();
+                    }
+                }
+            }
+        });
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = user;
-            const userInfo = document.getElementById('user-info');
-            if(userInfo) userInfo.innerText = `접속 ID: ${user.uid.substring(0, 8)}... (클라우드 연결됨)`;
+        document.getElementById('admin-pw').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') window.attemptAdminLogin();
+        });
+
+        window.closeAdminLogin = () => {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+            document.getElementById('admin-pw').value = '';
+            document.getElementById('admin-error').classList.add('hidden');
+        };
+
+        window.attemptAdminLogin = async () => {
+    const pw = document.getElementById('admin-pw').value;
+    const userOtp = document.getElementById('admin-otp')?.value?.trim();
+    const errorEl = document.getElementById('admin-error');
+
+    // 1. 비밀번호 확인
+    if (typeof CONFIG === 'undefined' || pw !== CONFIG.ADMIN_PASSWORD) {
+        if (errorEl) {
+            errorEl.innerText = "비밀번호가 올바르지 않습니다.";
+            errorEl.classList.remove('hidden');
+        }
+        return;
+    }
+
+    // 2. OTP 입력 여부 확인
+    if (!userOtp || userOtp.length !== 6) {
+        if (errorEl) {
+            errorEl.innerText = "6자리 OTP 번호를 입력해주세요.";
+            errorEl.classList.remove('hidden');
+        }
+        return;
+    }
+
+    try {
+        // 3. 파이어베이스 Firestore에서 현재 OTP 번호 조회
+        const docRef = db.collection("system").doc("current_otp");
+        const docSnap = await docRef.get();
+
+        if (!docSnap.exists) {
+            if (errorEl) {
+                errorEl.innerText = "OTP 정보를 가져올 수 없습니다.";
+                errorEl.classList.remove('hidden');
+            }
+            return;
+        }
+
+        const data = docSnap.data();
+        const correctOtp = data.code;
+        const updatedAt = data.updatedAt ? data.updatedAt.toDate() : new Date();
+
+        // 4. OTP 만료 검사 (6분 이상 경과 시 차단)
+        const diffMinutes = (new Date() - updatedAt) / (1000 * 60);
+        if (diffMinutes > 6) {
+            if (errorEl) {
+                errorEl.innerText = "OTP가 만료되었습니다. 새 번호를 확인해주세요.";
+                errorEl.classList.remove('hidden');
+            }
+            return;
+        }
+
+        // 5. 입력한 OTP 번호 검증
+        if (userOtp === correctOtp) {
+            if (errorEl) errorEl.classList.add('hidden');
             
-            // 공지사항 실시간 동기화
-            onSnapshot(noticeRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    window.currentNotice = docSnap.data().text;
-                    window.updateNoticeDisplay(window.currentNotice);
-                }
-            }, (error) => {
-                console.warn("Firestore 규칙 오류:", error);
-            });
-            showMenu();
-        }
-    });
-
-    initAuth();
-    window.updateNoticeDisplay(window.currentNotice);
-
-    // 6. 단축키 및 엔터 키 처리
-    window.addEventListener('keydown', (e) => {
-        if (e.key === 'Delete' || e.key === '\\' || e.key === '₩') {
-            const loginModal = document.getElementById('admin-login-modal');
-            const editModal = document.getElementById('admin-edit-modal');
-            if (loginModal && loginModal.classList.contains('hidden') && editModal && editModal.classList.contains('hidden')) {
-                e.preventDefault();
-                if (!window.isAdmin) {
-                    loginModal.classList.remove('hidden');
-                    setTimeout(() => document.getElementById('admin-pw')?.focus(), 100);
-                } else {
-                    window.openAdminEdit();
-                }
-            }
-        }
-    });
-
-    document.getElementById('admin-pw')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') window.attemptAdminLogin();
-    });
-    document.getElementById('admin-otp')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') window.attemptAdminLogin();
-    });
-
-    // 7. 관리자 로그인 / 공지 수정 모달 제어 함수
-    window.closeAdminLogin = () => {
-        document.getElementById('admin-login-modal')?.classList.add('hidden');
-        document.getElementById('admin-pw').value = '';
-        document.getElementById('admin-otp').value = '';
-        document.getElementById('admin-error')?.classList.add('hidden');
-    };
-
-    window.openAdminEdit = () => {
-        document.getElementById('admin-edit-modal')?.classList.remove('hidden');
-        const noticeInput = document.getElementById('notice-input');
-        if (noticeInput) {
-            noticeInput.value = window.currentNotice;
-            setTimeout(() => noticeInput.focus(), 100);
-        }
-    };
-
-    window.closeAdminEdit = () => {
-        document.getElementById('admin-edit-modal')?.classList.add('hidden');
-    };
-
-    // 8. 관리자 OTP 로그인 로직 (최신 v11 문법 적용)
-    window.attemptAdminLogin = async () => {
-        const pw = document.getElementById('admin-pw')?.value;
-        const userOtp = document.getElementById('admin-otp')?.value?.trim();
-        const errorEl = document.getElementById('admin-error');
-
-        if (typeof CONFIG === 'undefined' || pw !== CONFIG.ADMIN_PASSWORD) {
-            if (errorEl) { errorEl.innerText = "비밀번호가 올바르지 않습니다."; errorEl.classList.remove('hidden'); }
-            return;
-        }
-
-        if (!userOtp || userOtp.length !== 6) {
-            if (errorEl) { errorEl.innerText = "6자리 OTP 번호를 입력해주세요."; errorEl.classList.remove('hidden'); }
-            return;
-        }
-
-        try {
-            // 구버전 db.collection() 대신 최신 doc(), getDoc() 사용
-            const otpRef = doc(db, "system", "current_otp");
-            const docSnap = await getDoc(otpRef);
-
-            if (!docSnap.exists()) {
-                if (errorEl) { errorEl.innerText = "OTP 정보를 가져올 수 없습니다."; errorEl.classList.remove('hidden'); }
-                return;
-            }
-
-            const data = docSnap.data();
-            const correctOtp = data.code;
-            const updatedAt = data.updatedAt ? data.updatedAt.toDate() : new Date();
-
-            const diffMinutes = (new Date() - updatedAt) / (1000 * 60);
-            if (diffMinutes > 6) {
-                if (errorEl) { errorEl.innerText = "OTP가 만료되었습니다. 새 번호를 확인해주세요."; errorEl.classList.remove('hidden'); }
-                return;
-            }
-
-            if (userOtp === correctOtp) {
-                if (errorEl) errorEl.classList.add('hidden');
-                
-                window.isAdmin = true;
-                window.closeAdminLogin();
-                document.getElementById('admin-edit-btn')?.classList.remove('hidden');
-                
+            window.isAdmin = true;
+            window.closeAdminLogin();
+            document.getElementById('admin-edit-btn').classList.remove('hidden');
+            
+            if (typeof window.showAlert === 'function') {
                 window.showAlert('인증 성공! 이제 공지사항을 수정할 수 있습니다.');
             } else {
-                if (errorEl) { errorEl.innerText = "OTP 번호가 올바르지 않습니다."; errorEl.classList.remove('hidden'); }
+                alert('인증 성공! 이제 공지사항을 수정할 수 있습니다.');
             }
-        } catch (error) {
-            console.error("OTP 인증 오류:", error);
-            if (errorEl) { errorEl.innerText = "인증 중 오류가 발생했습니다."; errorEl.classList.remove('hidden'); }
+        } else {
+            if (errorEl) {
+                errorEl.innerText = "OTP 번호가 올바르지 않습니다.";
+                errorEl.classList.remove('hidden');
+            }
         }
-    };
 
-    // 9. 공지사항 클라우드 저장
-    window.saveNotice = async () => {
-        const inputVal = document.getElementById('notice-input')?.value;
-        if(inputVal !== undefined && inputVal.trim() !== '') {
-            window.currentNotice = inputVal;
-            window.updateNoticeDisplay(window.currentNotice);
-            
-            if (db && currentUser) {
-                try {
-                    await setDoc(noticeRef, { text: inputVal }, { merge: true });
-                    window.showAlert("🎉 클라우드 공지 저장 완료! 모든 플레이어에게 동기화됩니다.");
-                } catch(e) {
-                    console.error("Cloud save failed", e);
-                    window.showAlert("저장 실패: " + e.message);
-                }
-            } else {
-                window.showAlert("로컬 모드로 임시 저장되었습니다.");
-            }
+    } catch (error) {
+        console.error("OTP 인증 처리 중 오류 발생:", error);
+        if (errorEl) {
+            errorEl.innerText = "인증 중 오류가 발생했습니다.";
+            errorEl.classList.remove('hidden');
         }
-        window.closeAdminEdit();
-    };
-</script>
-    
+    }
+};
+        window.openAdminEdit = () => {
+            document.getElementById('admin-edit-modal').classList.remove('hidden');
+            document.getElementById('notice-input').value = window.currentNotice;
+            setTimeout(() => document.getElementById('notice-input').focus(), 100);
+        };
+
+        window.closeAdminEdit = () => {
+            document.getElementById('admin-edit-modal').classList.add('hidden');
+        };
+
+        window.saveNotice = async () => {
+            const inputVal = document.getElementById('notice-input').value;
+            if(inputVal.trim() !== '') {
+                window.currentNotice = inputVal;
+                window.updateNoticeDisplay(window.currentNotice);
+               
+                if (db && currentUser) {
+                    try {
+                        await setDoc(noticeRef, { text: inputVal }, { merge: true });
+                        window.showAlert("🎉 클라우드 공지 저장 완료! 모든 플레이어에게 동기화됩니다.");
+                    } catch(e) {
+                        console.error("Cloud save failed", e);
+                        if (e.code === 'permission-denied') {
+                            window.showAlert("🚨 권한 오류: Firebase Firestore의 규칙(Rules)을 'allow read, write: if true;'로 변경해주세요.");
+                        } else {
+                            window.showAlert("저장 실패: " + e.message);
+                        }
+                    }
+                } else {
+                    window.showAlert("로컬 모드로 임시 저장되었습니다.");
+                }
+            }
+            window.closeAdminEdit();
+        };
+
         // ==========================================
         // 미니게임 함수들 (28개)
         // ==========================================
