@@ -2,9 +2,8 @@ name: 5분마다 OTP 자동 업데이트
 
 on:
   schedule:
-    # 5분마다 실행 (Cron 표현식)
     - cron: '*/5 * * * *'
-  workflow_dispatch: # GitHub 웹에서 수동 실행 버튼 활성화
+  workflow_dispatch:
 
 jobs:
   update-otp:
