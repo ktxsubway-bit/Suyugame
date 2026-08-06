@@ -154,20 +154,19 @@
 </div>
 
 <!-- ========================================== -->
-<!-- 3. JavaScript: 핵심 로직 정의 (모듈 스크립트 연동 대비) -->
+<!-- 1. UI 및 단축키 제어 스크립트 (일반 Script) -->
 <!-- ========================================== -->
 <script>
-    // 전역 상태 관리 (기존에 이미 선언되어 있다면 초기화 코드 위치 유의)
+    // 전역 상태 관리
     if (window.isAdmin === undefined) window.isAdmin = false;
 
-    // 1. 단축키 이벤트 리스너 (중복 방지를 위해 단 한 번만 등록)
+    // 단축키 이벤트 리스너 (Delete, \, ₩ 키로 관리자 모달 호출)
     if (!window.hasAdminShortcutRegistered) {
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Delete' || e.key === '\\' || e.key === '₩') {
                 const loginModal = document.getElementById('admin-login-modal');
                 const editModal = document.getElementById('admin-edit-modal');
                 
-                // 모달들이 모두 닫혀있을 때만 동작
                 if (loginModal && loginModal.classList.contains('hidden') && (!editModal || editModal.classList.contains('hidden'))) {
                     e.preventDefault();
                     
@@ -183,85 +182,32 @@
         window.hasAdminShortcutRegistered = true;
     }
 
-    // 2. 비밀번호 입력창 엔터 키 이벤트 등록
-    document.getElementById('admin-pw')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') window.attemptAdminLogin();
+    // 비밀번호 입력창 엔터 키 이벤트
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('admin-pw')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') window.attemptAdminLogin();
+        });
+        document.getElementById('admin-otp')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') window.attemptAdminLogin();
+        });
     });
 
-    // 3. 로그인 모달 제어 함수들 (window에 명시적으로 바인딩)
+    // 로그인 모달 닫기
     window.closeAdminLogin = () => {
         document.getElementById('admin-login-modal')?.classList.add('hidden');
         const pwInput = document.getElementById('admin-pw');
+        const otpInput = document.getElementById('admin-otp');
         if (pwInput) pwInput.value = '';
+        if (otpInput) otpInput.value = '';
         document.getElementById('admin-error')?.classList.add('hidden');
     };
 
-    window.attemptAdminLogin = () => {
-    const pw = document.getElementById('admin-pw')?.value;
-    const otp = document.getElementById('admin-otp')?.value?.trim();
-
-    // 1. 비밀번호 일치 여부 확인
-    if (typeof CONFIG === 'undefined' || pw !== CONFIG.ADMIN_PASSWORD) {
-        document.getElementById('admin-error').innerText = "비밀번호가 틀렸습니다.";
-        document.getElementById('admin-error').classList.remove('hidden');
-        return; // 실패 시 여기서 실행 중단
-    }
-
-    // 2. OTP 입력 유무 확인
-    if (!otp) {
-        alert('구글 OTP 6자리 번호를 입력해 주세요.');
-        return; // 미입력 시 중단
-    }
-
-    // 3. OTPAuth 라이브러리 로드 여부 확인
-    if (typeof OTPAuth === 'undefined') {
-        alert('OTP 인증 라이브러리가 로드되지 않았습니다. index.html의 CDN을 확인하세요.');
-        return; // 라이브러리 없으면 통과시키지 않고 즉시 중단
-    }
-
-    try {
-        const totp = new OTPAuth.TOTP({
-            issuer: "MyApp",
-            label: "Admin",
-            algorithm: "SHA1",
-            digits: 6,
-            period: 30,
-            secret: OTPAuth.Secret.fromBase32(CONFIG.OTP_SECRET)
-        });
-
-        // OTP 검증 진행
-        // validate 함수는 실패 시 null을 반환합니다.
-        const delta = totp.validate({ token: otp, window: 1 });
-
-        // OTP 검증 실패한 경우 (delta가 null이거나 undefined인 경우)
-        if (delta === null || delta === undefined) {
-            alert('OTP 번호가 올바르지 않거나 만료되었습니다.');
-            return; // ❌ 실패했으므로 로그인시키지 않고 여기서 함수 종료!
-        }
-
-        // 4. 비밀번호와 OTP가 모두 완벽히 맞은 경우에만 로그인 성공 처리
-        window.isAdmin = true;
-        window.closeAdminLogin();
-        document.getElementById('admin-edit-btn')?.classList.remove('hidden');
-        if (typeof window.showAlert === 'function') {
-            window.showAlert('관리자로 로그인되었습니다.');
-        } else {
-            alert('관리자로 로그인되었습니다.');
-        }
-
-    } catch (error) {
-        console.error('OTP 인증 실패/오류:', error);
-        alert('OTP 인증 중 오류가 발생했습니다. (시크릿 키 형식 확인)');
-        // ❌ 에러 발생 시 절대 로그인 통과시키지 않음
-    }
-};
-    // 4. 공지사항 수정 모달 제어 함수들 (Firebase 연동용)
+    // 공지사항 수정 모달 제어
     window.openAdminEdit = () => {
         if (!window.isAdmin) return;
         const editModal = document.getElementById('admin-edit-modal');
         const noticeInput = document.getElementById('notice-input');
         
-        // 메인 화면 공지 텍스트가 있다면 불러와서 textarea에 미리 넣어줍니다.
         const currentNoticeText = document.getElementById('current-notice-text')?.innerText || window.currentNotice || '';
         if (noticeInput) noticeInput.value = currentNoticeText;
         
@@ -271,22 +217,14 @@
     window.closeAdminEdit = () => {
         document.getElementById('admin-edit-modal')?.classList.add('hidden');
     };
-
-    // ※ Firebase 저장 로직 연동을 위해 window에 비어있는 함수 틀을 제공 (필요시 하단 모듈 스크립트에서 덮어쓰기 가능)
-    if (typeof window.saveNotice !== 'function') {
-        window.saveNotice = () => {
-            const text = document.getElementById('notice-input')?.value;
-            console.log('공지 저장 시도:', text);
-            // 이 자리에 원래 구현해두신 Firebase Firestore/RealtimeDB 실시간 업데이트 로직을 그대로 유지하시면 됩니다.
-            // 성공 후에는 window.closeAdminEdit()를 호출하세요.
-        };
-    }
 </script>
 
-    <!-- Firebase 및 로직 스크립트 -->
-    <script type="module">
+<!-- ========================================== -->
+<!-- 2. Firebase 초기화 및 OTP 검증 (Module Script) -->
+<!-- ========================================== -->
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // 파이어베이스 설정값
@@ -300,7 +238,6 @@
         appId: "1:48274416774:web:c15811462fc618ebdd9d07",
         measurementId: "G-FT9MYSD4GW"
     };
-
     // 파이어베이스 초기화 (v11 최신 문법)
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
