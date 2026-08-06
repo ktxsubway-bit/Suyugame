@@ -2,8 +2,8 @@ name: 5분마다 OTP 자동 업데이트
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # 5분마다 실행
-  workflow_dispatch:      # Actions 탭에서 수동 실행 버튼 활성화
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 jobs:
   update-otp:
@@ -15,7 +15,7 @@ jobs:
       - name: Node.js 환경 설정
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: 파이어베이스 Admin SDK 설치
         run: npm install firebase-admin
