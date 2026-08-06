@@ -480,10 +480,10 @@
     }
 
     try {
-        // 3. 파이어베이스 Firestore에서 현재 OTP 번호 조회
-        const docRef = db.collection("system").doc("current_otp");
-        const docSnap = await docRef.get();
-
+    // 3. 파이어베이스 Firestore에서 현재 OTP 번호 조회 (v11 모듈러 방식)
+    const docRef = doc(db, "system", "current_otp");
+    const docSnap = await getDoc(docRef);
+        
         if (!docSnap.exists) {
             if (errorEl) {
                 errorEl.innerText = "OTP 정보를 가져올 수 없습니다.";
