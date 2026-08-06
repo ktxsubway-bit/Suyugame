@@ -392,16 +392,18 @@
         };
 
         window.attemptAdminLogin = () => {
-            const pw = document.getElementById('admin-pw').value;
-            if (pw === 'homerunentry9917@gmail.com') {
-                window.isAdmin = true;
-                window.closeAdminLogin();
-                document.getElementById('admin-edit-btn').classList.remove('hidden');
-                window.showAlert('인증 성공! 이제 공지사항을 수정할 수 있습니다.');
-            } else {
-                document.getElementById('admin-error').classList.remove('hidden');
-            }
-        };
+    const pw = document.getElementById('admin-pw').value;
+
+    // CONFIG 객체 존재 유무와 비밀번호 일치 여부 확인
+    if (typeof CONFIG !== 'undefined' && pw === CONFIG.ADMIN_PASSWORD) {
+        window.isAdmin = true;
+        window.closeAdminLogin();
+        document.getElementById('admin-edit-btn').classList.remove('hidden');
+        window.showAlert('인증 성공! 이제 공지사항을 수정할 수 있습니다.');
+    } else {
+        document.getElementById('admin-error').classList.remove('hidden');
+    }
+};
 
         window.openAdminEdit = () => {
             document.getElementById('admin-edit-modal').classList.remove('hidden');
