@@ -262,7 +262,7 @@ window.updateNoticeDisplay = (text) => {
     requestAnimationFrame(() => {
         if (textEl.scrollWidth > container.clientWidth) {
             // 1. 고정할 스크롤 속도 설정 (숫자가 클수록 빠름, 60~80px/s 권장)
-            const speed = 60; 
+            const speed = 80; 
 
             // 2. 전체 이동 거리 계산 (텍스트 너비 + 컨테이너 너비)
             const distance = textEl.scrollWidth + container.clientWidth;
