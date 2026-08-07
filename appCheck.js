@@ -21,7 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider('발급받은_사이트_키'), // reCAPTCHA v3 사이트 키 입력
+  provider: new ReCaptchaV3Provider('6LcHlnktAAAAAEIp8Fnj-J1x8dPIoSgdVtkCDEmf'), // reCAPTCHA v3 사이트 키 입력
   isTokenAutoRefreshEnabled: true
 });
 
