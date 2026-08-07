@@ -209,34 +209,12 @@
     window.closeAdminEdit = () => {
         document.getElementById('admin-edit-modal')?.classList.add('hidden');
     };
-
-    // ※ Firebase 저장 로직 연동을 위해 window에 비어있는 함수 틀을 제공 (필요시 하단 모듈 스크립트에서 덮어쓰기 가능)
-    if (typeof window.saveNotice !== 'function') {
-        window.saveNotice = () => {
-            const text = document.getElementById('notice-input')?.value;
-            console.log('공지 저장 시도:', text);
-            // 이 자리에 원래 구현해두신 Firebase Firestore/RealtimeDB 실시간 업데이트 로직을 그대로 유지하시면 됩니다.
-            // 성공 후에는 window.closeAdminEdit()를 호출하세요.
-        };
-    }
 </script>
 
     <!-- Firebase 및 로직 스크립트 -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // 파이어베이스 설정값
-        const firebaseConfig = {
-          apiKey: "AIzaSyA9CfIdZ0DNkvUdOk3-GlMlHV_FbAFNnGk",
-          authDomain: "hasi-game.firebaseapp.com",
-          projectId: "hasi-game",
-          storageBucket: "hasi-game.firebasestorage.app",
-          messagingSenderId: "48274416774",
-          appId: "1:48274416774:web:c15811462fc618ebdd9d07",
-          measurementId: "G-FT9MYSD4GW"
-        };
+        import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
@@ -305,10 +283,10 @@ window.updateNoticeDisplay = (text) => {
         };
 
         try {
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main_notice');
+    // appCheck.js에서 만든 window.app과 window.db를 사용합니다.
+    auth = getAuth(window.app);
+    db = window.db;
+    noticeRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main_notice');
 
             const initAuth = async () => {
                 try {
@@ -362,23 +340,6 @@ window.updateNoticeDisplay = (text) => {
             if (document.fullscreenElement) icon.setAttribute('data-lucide', 'minimize');
             else icon.setAttribute('data-lucide', 'maximize');
             lucide.createIcons();
-        });
-
-        // ￦ 또는 Delete 키 이벤트
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Delete' || e.key === '\\' || e.key === '₩') {
-                const loginModal = document.getElementById('admin-login-modal');
-                const editModal = document.getElementById('admin-edit-modal');
-                if (loginModal.classList.contains('hidden') && editModal.classList.contains('hidden')) {
-                    e.preventDefault();
-                    if (!window.isAdmin) {
-                        loginModal.classList.remove('hidden');
-                        setTimeout(() => document.getElementById('admin-pw').focus(), 100);
-                    } else {
-                        window.openAdminEdit();
-                    }
-                }
-            }
         });
 
         document.getElementById('admin-pw').addEventListener('keypress', (e) => {
