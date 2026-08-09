@@ -3278,6 +3278,14 @@ const mountDobble = (dobbleContainer) => {
         </div>
     `;
 };
+
+const mountDish = (dishContainer) => {
+    dishContainer.innerHTML = `
+        <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
+            <iframe src="https://songsiwon001-a11y.github.io/DISHSPOONKUFE/" class="absolute inset-0 w-full h-full border-0" allow="autoplay; gamepad; fullscreen" allowfullscreen></iframe>
+        </div>
+    `;
+};
         
         // ==========================================
         // 메인 데이터 & 라우팅 (전체 28개 게임 - 한글/영어/숫자순 정렬)
@@ -3314,6 +3322,7 @@ const mountDobble = (dobbleContainer) => {
   // 2. 영어 (알파벳순)      
   // { id: 'bellContainer',     title: 'BELLRUN!',          icon: 'bell',   color: 'bg-teal-100 text-teal-600',      mount: mountgemini },
   { id: 'container',     title: 'DEADSHOT',           icon: 'crosshair',      color: 'bg-teal-100 text-teal-600',      mount: mountGun },
+  { id: 'dishContainer',     title: 'Dish and Spoon',           icon: 'die',      color: 'bg-rose-100 text-rose-700',      mount: mountDish },
   { id: 'dobbleContainer',     title: 'DOBBLE',           icon: 'circle',      color: 'bg-rose-100 text-rose-700',      mount: mountDobble },          
   { id: 'chessGameContainer',     title: 'Chess',           icon: 'chess-pawn',      color: 'bg-teal-100 text-teal-600',      mount: mountChess },
   { id: 'gunContainer',     title: 'ITEM & SURVIVAL (알파)',           icon: 'crosshair',      color: 'bg-teal-100 text-teal-600',      mount: mountGungun }, 
