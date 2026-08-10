@@ -3290,10 +3290,16 @@ const mountDish = (dishContainer) => {
 const mountNewsnake = (newsnakeContainer) => {
     newsnakeContainer.innerHTML = `
         <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
-            <iframe src="https://ktxsubway-bit.github.io/suyugamesnake/" class="absolute inset-0 w-full h-full border-0" allow="autoplay; gamepad; fullscreen" allowfullscreen></iframe>
+            <iframe 
+                src="https://ktxsubway-bit.github.io/suyugamesnake/" 
+                class="absolute inset-0 w-full h-full border-0" 
+                allow="autoplay; gamepad; fullscreen" 
+                loading="lazy">
+            </iframe>
         </div>
     `;
 };
+
             
         // ==========================================
         // 메인 데이터 & 라우팅 (전체 28개 게임 - 한글/영어/숫자순 정렬)
