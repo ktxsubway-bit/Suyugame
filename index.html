@@ -1632,7 +1632,7 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
             let player = [], pDir = {x:0,y:-1}, nextDir = {x:0,y:-1};
             let npcs = [], food = {x:5,y:5};
 
-            container.innerHTML = `
+            snake.innerHTML = `
                 <div class="flex flex-col items-center touch-none mt-4">
                     <div class="flex justify-between w-full max-w-[280px] mb-4 text-xl font-bold">
                         <span class="text-emerald-600 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100 w-full text-center">점수: <span id="sn-score" class="font-black ml-1">0</span></span>
@@ -3286,7 +3286,15 @@ const mountDish = (dishContainer) => {
         </div>
     `;
 };
-        
+
+const mountNewsnake = (newsnakeContainer) => {
+    newsnakeContainer.innerHTML = `
+        <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
+            <iframe src="https://ktxsubway-bit.github.io/suyugamesnake/" class="absolute inset-0 w-full h-full border-0" allow="autoplay; gamepad; fullscreen" allowfullscreen></iframe>
+        </div>
+    `;
+};
+            
         // ==========================================
         // 메인 데이터 & 라우팅 (전체 28개 게임 - 한글/영어/숫자순 정렬)
         // ==========================================
@@ -3306,7 +3314,7 @@ const mountDish = (dishContainer) => {
   { id: 'color',      title: '색깔 찾기',           icon: 'palette',              color: 'bg-pink-100 text-pink-600',     mount: mountColor },
   { id: 'subway',     title: '서브웨이 런',         icon: 'train',                color: 'bg-cyan-100 text-cyan-600',     mount: mountSubwayRun },
   { id: 'baseball',   title: '숫자 야구',           icon: 'trophy',              color: 'bg-orange-100 text-orange-600', mount: mountBaseball },
-  // { id: 'snake',      title: '스네이크(NPC)',       icon: 'bug',                  color: 'bg-lime-100 text-lime-700',     mount: mountSnake },
+  { id: 'snakeContainer',      title: '스네이크 (알파)',       icon: 'bug',                  color: 'bg-lime-100 text-lime-700',     mount: mountNewsnake },
   { id: 'penalty',    title: '승부차기',             icon: 'flag',                 color: 'bg-green-100 text-green-700',   mount: mountPenaltyKick },
   { id: 'motorcycle', title: '오토바이 3D',         icon: 'gauge',                color: 'bg-orange-100 text-orange-700', mount: mountMotorcycle },
   // { id: 'fps',        title: '김밥천국 시뮬레이터',     icon: 'rice',                color: 'bg-red-100 text-red-600',       mount: mountFps },
