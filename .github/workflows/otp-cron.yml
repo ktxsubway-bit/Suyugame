@@ -1,8 +1,6 @@
 name: 5분마다 OTP 자동 업데이트
 
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
