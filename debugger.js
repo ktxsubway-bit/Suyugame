@@ -2,11 +2,13 @@
     let devToolsOpen = false;
 
     function printWarning() {
-        console.log(
-            "%c불법 복제는 당신을 감옥으로 이끕니다.",
-            "color: red; font-size: 30px; font-weight: bold; background-color: black; padding: 10px;"
-        );
-    }
+    // console.log 대신 console.error 사용 (글자색 지정을 위해 %c 유지)
+    console.error(
+        "%c불법 복제는 당신을 감옥으로 이끕니다.",
+        "color: red; font-size: 30px; font-weight: bold; background-color: black; padding: 10px;"
+    );
+}
+
 
     function detectDevTools() {
         const startTime = Date.now();
