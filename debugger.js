@@ -1,33 +1,40 @@
 (function() {
-    // 콘솔창에 강제 경고 문구 출력 (지워지지 않도록 주기적 설정)
-    function printWarning() {
-        console.clear();
-        console.log(
-            "%c불법 복제는 당신을 감옥으로 이끕니다.", 
-            "color: red; font-size: 30px; font-weight: bold; background-color: black; padding: 10px;"
-        );
-    }
+    let devToolsOpen = false;
 
-    // 개발자 도구 유저가 무언가를 분석하려고 하면 무한 디버거를 걸어 스크립트를 마비시킵니다.
-    function detectDevTools() {
-        const startTime = new Date().getTime();
-        
-        // 이 구문은 F12가 열려있을 때만 브라우저를 멈추게 합니다.
-        debugger; 
-        
-        const endTime = new Date().getTime();
-        
-        // debugger 작동으로 인해 시간 지연이 발생했다면 F12가 열린 것으로 판단
-        if (endTime - startTime > 100) {
-            printWarning();
-            
-            // 모든 페이지 요소를 지우고 스크립트 실행 흐름을 완전히 파괴합니다.
-            document.body.innerHTML = "<h1>접근이 거부되었습니다.</h1>";
-            throw new Error("Script execution stopped by security policy.");
+    function printWarning() {
+        // 개발자 도구가 감지되었을 때만 경고를 출력합니다. (console.clear 제거)
+        if (devToolsOpen) {
+            console.log(
+                "%c불법 복제는 당신을 감옥으로 이끕니다.",
+                "color: red; font-size: 30px; font-weight: bold; background-color: black; padding: 10px;"
+            );
         }
     }
 
-    // 주기적으로 감시 및 경고 출력
-    setInterval(detectDevTools, 500);
-    setInterval(printWarning, 1000);
+    function detectDevTools() {
+        const startTime = Date.now();
+        debugger; 
+        const endTime = Date.now();
+
+        if (endTime - startTime > 100) {
+            // 이미 감지되었다면 중복 실행 방지
+            if (devToolsOpen) return; 
+            
+            devToolsOpen = true;
+            
+            // 1. 화면 차단
+            document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20%;'>접근이 거부되었습니다.</h1>";
+            
+            // 2. 콘솔 경고 출력
+            printWarning(); 
+            
+            // 3. 미세한 시차를 두고 스크립트 중단 (로그 출력 보장)
+            setTimeout(() => {
+                throw new Error("Script execution stopped by security policy.");
+            }, 10);
+        }
+    }
+
+    // 1초마다 개발자 도구 열림 감시
+    setInterval(detectDevTools, 1000);
 })();
