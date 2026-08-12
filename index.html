@@ -396,16 +396,16 @@ window.updateNoticeDisplay = (text) => {
     const userOtp = document.getElementById('admin-otp')?.value?.trim();
     const errorEl = document.getElementById('admin-error');
 
-    // 1. 비밀번호 확인
-    if (typeof CONFIG === 'undefined' || pw !== CONFIG.ADMIN_PASSWORD) {
+    // 1. 비밀번호 입력 확인
+    if (!pw) {
         if (errorEl) {
-            errorEl.innerText = "비밀번호가 올바르지 않습니다.";
+            errorEl.innerText = "비밀번호를 입력해주세요.";
             errorEl.classList.remove('hidden');
         }
         return;
     }
 
-    // 2. OTP 입력 여부 확인
+    // 2. OTP 입력 확인
     if (!userOtp || userOtp.length !== 6) {
         if (errorEl) {
             errorEl.innerText = "6자리 OTP 번호를 입력해주세요.";
@@ -414,59 +414,17 @@ window.updateNoticeDisplay = (text) => {
         return;
     }
 
-    try {
-    // 3. 파이어베이스 Firestore에서 현재 OTP 번호 조회 (v11 모듈러 방식)
-    const docRef = doc(db, "system", "current_otp");
-    const docSnap = await getDoc(docRef);
-        
-        if (!docSnap.exists) {
-            if (errorEl) {
-                errorEl.innerText = "OTP 정보를 가져올 수 없습니다.";
-                errorEl.classList.remove('hidden');
-            }
-            return;
-        }
+    // 입력받은 비밀번호와 OTP를 임시 저장 (실제 검증은 Deno 백엔드가 수행)
+    window.adminPw = pw;
+    window.adminOtp = userOtp;
+    window.isAdmin = true;
 
-        const data = docSnap.data();
-        const correctOtp = data.code;
-        const updatedAt = data.updatedAt ? data.updatedAt.toDate() : new Date();
+    if (errorEl) errorEl.classList.add('hidden');
+    window.closeAdminLogin();
+    document.getElementById('admin-edit-btn').classList.remove('hidden');
 
-        // 4. OTP 만료 검사 (6분 이상 경과 시 차단)
-        const diffMinutes = (new Date() - updatedAt) / (1000 * 60);
-        if (diffMinutes > 6) {
-            if (errorEl) {
-                errorEl.innerText = "OTP가 만료되었습니다. 새 번호를 확인해주세요.";
-                errorEl.classList.remove('hidden');
-            }
-            return;
-        }
-
-        // 5. 입력한 OTP 번호 검증
-        if (userOtp === correctOtp) {
-            if (errorEl) errorEl.classList.add('hidden');
-            
-            window.isAdmin = true;
-            window.closeAdminLogin();
-            document.getElementById('admin-edit-btn').classList.remove('hidden');
-            
-            if (typeof window.showAlert === 'function') {
-                window.showAlert('인증 성공! 이제 공지사항을 수정할 수 있습니다.');
-            } else {
-                alert('인증 성공! 이제 공지사항을 수정할 수 있습니다.');
-            }
-        } else {
-            if (errorEl) {
-                errorEl.innerText = "OTP 번호가 올바르지 않습니다.";
-                errorEl.classList.remove('hidden');
-            }
-        }
-
-    } catch (error) {
-        console.error("OTP 인증 처리 중 오류 발생:", error);
-        if (errorEl) {
-            errorEl.innerText = "인증 중 오류가 발생했습니다.";
-            errorEl.classList.remove('hidden');
-        }
+    if (typeof window.showAlert === 'function') {
+        window.showAlert('관리자 모드가 활성화되었습니다. (공지 저장 시 최종 검증됩니다)');
     }
 };
         window.openAdminEdit = () => {
@@ -479,31 +437,39 @@ window.updateNoticeDisplay = (text) => {
             document.getElementById('admin-edit-modal').classList.add('hidden');
         };
 
-        window.saveNotice = async () => {
-            const inputVal = document.getElementById('notice-input').value;
-            if(inputVal.trim() !== '') {
+       window.saveNotice = async () => {
+    const inputVal = document.getElementById('notice-input')?.value;
+    const BACKEND_URL = "https://mad-cheetah-6907.ktxsubway.deno.net";
+
+    if (inputVal && inputVal.trim() !== '') {
+        try {
+            // Deno Deploy 백엔드로 비밀번호, OTP, 공지사항 내용 전송
+            const response = await fetch(BACKEND_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    password: window.adminPw,
+                    otp: window.adminOtp,
+                    noticeContent: inputVal
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
                 window.currentNotice = inputVal;
                 window.updateNoticeDisplay(window.currentNotice);
-               
-                if (db && currentUser) {
-                    try {
-                        await setDoc(noticeRef, { text: inputVal }, { merge: true });
-                        window.showAlert("🎉 클라우드 공지 저장 완료! 모든 플레이어에게 동기화됩니다.");
-                    } catch(e) {
-                        console.error("Cloud save failed", e);
-                        if (e.code === 'permission-denied') {
-                            window.showAlert("🚨 권한 오류: Firebase Firestore의 규칙(Rules)을 'allow read, write: if true;'로 변경해주세요.");
-                        } else {
-                            window.showAlert("저장 실패: " + e.message);
-                        }
-                    }
-                } else {
-                    window.showAlert("로컬 모드로 임시 저장되었습니다.");
-                }
+                window.showAlert("🎉 " + result.message);
+            } else {
+                window.showAlert("🚨 저장 실패: " + result.message);
             }
-            window.closeAdminEdit();
-        };
-
+        } catch (e) {
+            console.error("Cloud save failed", e);
+            window.showAlert("저장 실패: Deno 백엔드 서버 통신 오류가 발생했습니다.");
+        }
+    }
+    window.closeAdminEdit();
+};
         // ==========================================
         // 미니게임 함수들 (28개)
         // ==========================================
