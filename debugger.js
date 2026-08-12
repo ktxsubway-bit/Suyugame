@@ -34,7 +34,19 @@
         }, 50);
     }
 
-    // 2. 기존 debugger 기반 개발자 도구 오픈 감지 로직
+    // 2. 무한 디버거 루프 생성 함수 (재귀 호출 구조)
+    function antiDebugging(index) {
+        // 숫자가 계속 변경되는 함수 구조를 만들어 분석을 방해합니다.
+        if (String(index / index).length !== 1 || index % 20 === 0) {
+            (function() {}.constructor("debugger")());
+        } else {
+            (function() {}.constructor("debugger")());
+        }
+        // 연속적으로 재귀 호출을 수행하여 디버거를 유지합니다.
+        antiDebugging(++index);
+    }
+
+    // 3. 기존 시간차 기반 개발자 도구 오픈 감지 로직
     function detectDevTools() {
         const startTime = Date.now();
         debugger; 
@@ -42,10 +54,17 @@
 
         if (endTime - startTime > 100) {
             triggerSecurityAction();
+            
+            // 개발자 도구가 감지되면 무한 디버거 루프를 발동시킵니다.
+            try {
+                antiDebugging(0);
+            } catch (e) {
+                // 루프 중 발생할 수 있는 에러 제어
+            }
         }
     }
 
-    // 3. 키보드 단축키 차단 로직 (F12, Ctrl+Shift+I/J, Ctrl+U)
+    // 4. 키보드 단축키 차단 로직 (F12, Ctrl+Shift+I/J, Ctrl+U)
     window.addEventListener('keydown', function(event) {
         const isCtrl = event.ctrlKey || event.metaKey;
         const isShift = event.shiftKey;
@@ -58,15 +77,19 @@
         ) {
             event.preventDefault(); 
             triggerSecurityAction();
+            
+            // 단축키 입력 즉시 무한 루프 발동
+            try { antiDebugging(0); } catch (e) {}
         }
     });
 
-    // 4. 마우스 우클릭(컨텍스트 메뉴) 차단 로직
+    // 5. 마우스 우클릭(컨텍스트 메뉴) 차단 로직
     window.addEventListener('contextmenu', function(event) {
         event.preventDefault();
         triggerSecurityAction();
     });
 
-    // 주기적으로 디버거 체크 실행
-    setInterval(detectDevTools, 1000);
+    // 페이지 로드 직후 및 주기적으로 디버거 체크 실행
+    detectDevTools();
+    setInterval(detectDevTools, 500); // 감지 주기를 0.5초로 단축
 })();
