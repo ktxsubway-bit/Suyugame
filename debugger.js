@@ -27,7 +27,7 @@
                     user-select: none;
                     margin: 0;
                 ">
-                    접근이 거부되었습니다.
+                    접근이 거부되었습니다. 불법 복제는 당신을 감옥으로 이끕니다.
                 </div>
             `;
             throw new Error("Script execution stopped by security policy.");
@@ -81,12 +81,6 @@
             // 단축키 입력 즉시 무한 루프 발동
             try { antiDebugging(0); } catch (e) {}
         }
-    });
-
-    // 5. 마우스 우클릭(컨텍스트 메뉴) 차단 로직
-    window.addEventListener('contextmenu', function(event) {
-        event.preventDefault();
-        triggerSecurityAction();
     });
 
     // 페이지 로드 직후 및 주기적으로 디버거 체크 실행
