@@ -241,7 +241,7 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         // 전역 상태
-        window.currentNotice = "하시";
+        window.currentNotice = "오늘도 수유게임을 이용해 주셔서 감사드립니다.";
         window.isAdmin = false;
         window.currentCleanup = null;
         let currentUser = null;
@@ -457,6 +457,83 @@ window.updateNoticeDisplay = (text) => {
         }
     }
 };
+
+
+// 2. 공지 수정 모달 열기 / 닫기
+window.openAdminEdit = () => {
+    document.getElementById('admin-edit-modal')?.classList.remove('hidden');
+    const input = document.getElementById('notice-input');
+    if (input) {
+        input.value = window.currentNotice || '';
+        setTimeout(() => input.focus(), 100);
+    }
+};
+
+window.closeAdminEdit = () => {
+    document.getElementById('admin-edit-modal')?.classList.add('hidden');
+};
+
+// 3. 공지사항 저장
+window.saveNotice = async (e) => {
+    if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault(); // 폼 제출로 인한 페이지 새로고침 방지
+    }
+
+    const inputVal = document.getElementById('notice-input')?.value;
+    const BACKEND_URL = "https://mad-cheetah-6907.ktxsubway.deno.net";
+
+    if (!inputVal || inputVal.trim() === '') {
+        if (typeof window.showAlert === 'function') {
+            window.showAlert("공지사항 내용을 입력해주세요.");
+        } else {
+            alert("공지사항 내용을 입력해주세요.");
+        }
+        return;
+    }
+
+    try {
+        const response = await fetch(BACKEND_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                password: window.adminPw,
+                otp: window.adminOtp,
+                noticeContent: inputVal,
+                action: "save"
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            window.currentNotice = inputVal;
+            if (typeof window.updateNoticeDisplay === 'function') {
+                window.updateNoticeDisplay(window.currentNotice);
+            }
+            
+            if (typeof window.showAlert === 'function') {
+                window.showAlert("🎉 " + result.message);
+            } else {
+                alert("🎉 " + result.message);
+            }
+            window.closeAdminEdit();
+        } else {
+            if (typeof window.showAlert === 'function') {
+                window.showAlert("🚨 저장 실패: " + result.message);
+            } else {
+                alert("저장 실패: " + result.message);
+            }
+        }
+    } catch (err) {
+        console.error("Cloud save failed", err);
+        if (typeof window.showAlert === 'function') {
+            window.showAlert("저장 실패: Deno 백엔드 서버 통신 오류가 발생했습니다.");
+        } else {
+            alert("저장 실패: Deno 백엔드 서버 통신 오류가 발생했습니다.");
+        }
+    }
+};
+        
         // ==========================================
         // 미니게임 함수들 (28개)
         // ==========================================
