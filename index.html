@@ -392,9 +392,10 @@ window.updateNoticeDisplay = (text) => {
         };
 
         window.attemptAdminLogin = async () => {
-    const pw = document.getElementById('admin-pw').value;
+    const pw = document.getElementById('admin-pw')?.value;
     const userOtp = document.getElementById('admin-otp')?.value?.trim();
     const errorEl = document.getElementById('admin-error');
+    const BACKEND_URL = "https://mad-cheetah-6907.ktxsubway.deno.net";
 
     // 1. 비밀번호 입력 확인
     if (!pw) {
@@ -414,61 +415,47 @@ window.updateNoticeDisplay = (text) => {
         return;
     }
 
-    // 입력받은 비밀번호와 OTP를 임시 저장 (실제 검증은 Deno 백엔드가 수행)
-    window.adminPw = pw;
-    window.adminOtp = userOtp;
-    window.isAdmin = true;
+    try {
+        // 3. Deno 백엔드로 로그인 인증 요청
+        const response = await fetch(BACKEND_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                password: pw,
+                otp: userOtp,
+                action: "verify"
+            })
+        });
 
-    if (errorEl) errorEl.classList.add('hidden');
-    window.closeAdminLogin();
-    document.getElementById('admin-edit-btn').classList.remove('hidden');
+        const result = await response.json();
 
-    if (typeof window.showAlert === 'function') {
-        window.showAlert('관리자 모드가 활성화되었습니다. (공지 저장 시 최종 검증됩니다)');
-    }
-};
-        window.openAdminEdit = () => {
-            document.getElementById('admin-edit-modal').classList.remove('hidden');
-            document.getElementById('notice-input').value = window.currentNotice;
-            setTimeout(() => document.getElementById('notice-input').focus(), 100);
-        };
+        if (result.success) {
+            // 검증 성공시에만 저장 및 관리자 모드 활성화
+            window.adminPw = pw;
+            window.adminOtp = userOtp;
+            window.isAdmin = true;
 
-        window.closeAdminEdit = () => {
-            document.getElementById('admin-edit-modal').classList.add('hidden');
-        };
+            if (errorEl) errorEl.classList.add('hidden');
+            window.closeAdminLogin();
+            document.getElementById('admin-edit-btn')?.classList.remove('hidden');
 
-       window.saveNotice = async () => {
-    const inputVal = document.getElementById('notice-input')?.value;
-    const BACKEND_URL = "https://mad-cheetah-6907.ktxsubway.deno.net";
-
-    if (inputVal && inputVal.trim() !== '') {
-        try {
-            // Deno Deploy 백엔드로 비밀번호, OTP, 공지사항 내용 전송
-            const response = await fetch(BACKEND_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    password: window.adminPw,
-                    otp: window.adminOtp,
-                    noticeContent: inputVal
-                })
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                window.currentNotice = inputVal;
-                window.updateNoticeDisplay(window.currentNotice);
-                window.showAlert("🎉 " + result.message);
-            } else {
-                window.showAlert("🚨 저장 실패: " + result.message);
+            if (typeof window.showAlert === 'function') {
+                window.showAlert('🎉 인증 성공! 이제 공지사항을 수정할 수 있습니다.');
             }
-        } catch (e) {
-            console.error("Cloud save failed", e);
-            window.showAlert("저장 실패: Deno 백엔드 서버 통신 오류가 발생했습니다.");
+        } else {
+            // 비밀번호 또는 OTP 실패 시 모달 창 내부에 오류 표시
+            if (errorEl) {
+                errorEl.innerText = result.message || "비밀번호 또는 OTP 번호가 불일치합니다.";
+                errorEl.classList.remove('hidden');
+            }
+        }
+    } catch (e) {
+        console.error("Login verification failed", e);
+        if (errorEl) {
+            errorEl.innerText = "서버 통신 오류가 발생했습니다.";
+            errorEl.classList.remove('hidden');
         }
     }
-    window.closeAdminEdit();
 };
         // ==========================================
         // 미니게임 함수들 (28개)
