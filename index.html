@@ -127,6 +127,9 @@
 
         <p id="admin-error" class="text-rose-500 text-sm mb-4 font-bold hidden">비밀번호 또는 OTP 번호가 불일치합니다.</p>
 
+        <!-- HASI MAP 광고 배너 -->
+        <div class="flex justify-center w-full my-6 px-4"><a href="https://hasimap.kro.kr" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-105"><img src="/banner-468x60.png" alt="HASI MAP" class="max-w-full h-auto rounded-xl shadow-md" style="max-height: 80px;"></a></div>
+
         <div class="flex justify-end space-x-3 mt-6">
             <button onclick="window.closeAdminLogin()" class="px-5 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200 transition-colors">취소</button>
             <button onclick="window.attemptAdminLogin()" class="px-5 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors">로그인</button>
@@ -442,7 +445,7 @@ window.updateNoticeDisplay = (text) => {
             document.getElementById('admin-edit-btn')?.classList.remove('hidden');
 
             if (typeof window.showAlert === 'function') {
-                window.showAlert('🎉 인증 성공! 이제 공지사항을 수정할 수 있습니다.');
+                window.showAlert('로그인되었습니다!');
             }
         } else {
             // 비밀번호 또는 OTP 실패 시 모달 창 내부에 오류 표시
