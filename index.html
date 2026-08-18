@@ -318,12 +318,31 @@ window.updateNoticeDisplay = (text) => {
                     showMenu();
                 }
             };
+
+            // HASI MAP 광고 배너 생성 (저작권 문구 바로 위)
+const adContainer = document.createElement('div');
+adContainer.id = 'hasi-map-ad-banner';
+adContainer.className = 'flex justify-center w-full my-6 px-4';
+adContainer.innerHTML = `
+    <a href="https://hasimap.kro.kr" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-105">
+        <img src="/banner-468x60.png" alt="HASI MAP - 당신의 완벽한 맛집 지도를 완성하세요" class="max-w-full h-auto rounded-xl shadow-md" style="max-height: 80px;">
+    </a>
+`;
+
+const userInfo = document.getElementById('user-info');
+if (userInfo && userInfo.parentNode) {
+    userInfo.parentNode.insertBefore(adContainer, userInfo);
+} else {
+    document.body.appendChild(adContainer);
+}
            
             // 인증 상태 감시 및 데이터 동기화
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
                     document.getElementById('user-info').innerText = `Copyright © 2026 RICEJAMJAM studio. All rights reserved.`;
+
+                    
                    
                     onSnapshot(noticeRef, (docSnap) => {
                         if (docSnap.exists()) {
