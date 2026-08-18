@@ -318,31 +318,12 @@ window.updateNoticeDisplay = (text) => {
                     showMenu();
                 }
             };
-
-            // HASI MAP 광고 배너 생성 (저작권 문구 바로 위)
-const adContainer = document.createElement('div');
-adContainer.id = 'hasi-map-ad-banner';
-adContainer.className = 'flex justify-center w-full my-6 px-4';
-adContainer.innerHTML = `
-    <a href="https://hasimap.kro.kr" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-105">
-        <img src="/banner-468x60.png" alt="HASI MAP - 당신의 완벽한 맛집 지도를 완성하세요" class="max-w-full h-auto rounded-xl shadow-md" style="max-height: 80px;">
-    </a>
-`;
-
-const userInfo = document.getElementById('user-info');
-if (userInfo && userInfo.parentNode) {
-    userInfo.parentNode.insertBefore(adContainer, userInfo);
-} else {
-    document.body.appendChild(adContainer);
-}
            
             // 인증 상태 감시 및 데이터 동기화
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user;
                     document.getElementById('user-info').innerText = `Copyright © 2026 RICEJAMJAM studio. All rights reserved.`;
-
-                    
                    
                     onSnapshot(noticeRef, (docSnap) => {
                         if (docSnap.exists()) {
@@ -1254,6 +1235,14 @@ window.saveNotice = async (e) => {
                         <button id="te-right" class="bg-white border border-slate-200 p-4 rounded-xl flex justify-center shadow-md active:bg-slate-100 text-slate-700"><i data-lucide="chevron-right" class="w-7 h-7"></i></button>
                     </div>
                 </div>
+
+                <div style="text-align: center; margin: 20px 0;">
+            <a href="https://hasimap.kro.kr" target="_blank" rel="noopener noreferrer">
+                <img src="/banner-468x60.png" alt="HASI MAP - 당신의 완벽한 맛집 지도를 완성하세요" width="468" height="60" style="border: none; max-width: 100%; height: auto;">
+            </a>
+        </div>
+    </div>`;
+
 lucide.createIcons();
             
             const grid = document.getElementById('te-grid');
@@ -1302,9 +1291,7 @@ lucide.createIcons();
                 grid.innerHTML = '';
                 for(let y=0; y<R; y++) for(let x=0; x<C; x++) {
                     const cell = document.createElement('div');
-                    const bg = (d[y] && d[y][x]) ? d[y][x] : 'bg-transparent';
-                        cell.className = 'w-full h-full border-[0.5px] border-slate-800/30 ' + bg + ' rounded-sm';
-                    cell.style.boxShadow = 'inset 0 0 2px rgba(0,0,0,0.5)';
+                    cell.className = `w-full h-full border-[0.5px] border-slate-800/30 ${d[y][x] || 'bg-transparent'} rounded-sm shadow-[inset_0_0_2px_rgba(0,0,0,0.5)]`;
                     cell.style.gridRow = y+1; cell.style.gridColumn = x+1;
                     grid.appendChild(cell);
                 }
