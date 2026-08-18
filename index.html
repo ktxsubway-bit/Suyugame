@@ -1302,7 +1302,8 @@ lucide.createIcons();
                 grid.innerHTML = '';
                 for(let y=0; y<R; y++) for(let x=0; x<C; x++) {
                     const cell = document.createElement('div');
-                    cell.className = `w-full h-full border-[0.5px] border-slate-800/30 ${d[y][x] || 'bg-transparent'} rounded-sm shadow-[inset_0_0_2px_rgba(0,0,0,0.5)]`;
+                    cell.className = `w-full h-full border-[0.5px] border-slate-800/30 ${d[y][x] || 'bg-transparent'} rounded-sm`;
+                    cell.style.boxShadow = 'inset 0 0 2px rgba(0,0,0,0.5)';
                     cell.style.gridRow = y+1; cell.style.gridColumn = x+1;
                     grid.appendChild(cell);
                 }
