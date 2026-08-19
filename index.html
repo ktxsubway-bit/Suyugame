@@ -3515,12 +3515,13 @@ const mountGango = (gangoContainer) => {
 <audio id="bgm" src="bgm.mp3" loop></audio>
 
 <!-- 
-  오른쪽 전체화면 버튼과 완벽히 대칭되는 왼쪽 아이콘 버튼 
-  - 기본 상태: 전체화면 버튼과 크기, 패딩, 배경색, 그림자(shadow) 모두 동일
-  - 5초 후: scale-75로 작아지고 opacity-40으로 은은하게 압축
+  [수정 포인트]
+  - top-[26px]: 위로 치우치지 않게 아래로 더 내렸습니다.
+  - left-6: 왼쪽 여백을 오른쪽 여백과 동일하게 맞췄습니다.
+  - w-9 h-9: 전체화면 버튼과 1:1 똑같은 크기로 줄였습니다.
 -->
-<div id="playerContainer" class="fixed top-4 left-4 z-50 flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] rounded-full w-10 h-10 shadow-sm cursor-pointer transition-all duration-500 ease-in-out select-none origin-top-left scale-100 opacity-100">
-  <span id="playerIcon" class="text-lg flex items-center justify-center">🔊</span>
+<div id="playerContainer" class="fixed top-[26px] left-6 z-50 flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] rounded-full w-9 h-9 shadow-sm cursor-pointer transition-all duration-500 ease-in-out select-none origin-center scale-100 opacity-100">
+  <span id="playerIcon" class="text-base flex items-center justify-center select-none">🔊</span>
 </div>
 
 <script>
@@ -3535,38 +3536,36 @@ const mountGango = (gangoContainer) => {
   function expandPlayer() {
     clearTimeout(compressTimeout);
     
-    container.classList.remove('scale-75', 'opacity-40');
+    container.classList.remove('scale-75', 'opacity-30');
     container.classList.add('scale-100', 'opacity-100');
 
     // 다시 5초 후에 압축 모드 진입
     compressTimeout = setTimeout(compressPlayer, 5000);
   }
 
-  // 5초 후 왼쪽 구석으로 작게 압축하는 함수
+  // 5초 후 제자리에서 작게 압축하는 함수
   function compressPlayer() {
     container.classList.remove('scale-100', 'opacity-100');
-    container.classList.add('scale-75', 'opacity-40'); // 75% 크기로 축소 및 투명화
+    container.classList.add('scale-75', 'opacity-30'); // 75% 크기로 자연스럽게 축소
   }
 
   // 클릭 이벤트 제어
   container.addEventListener('click', function() {
-    // 모바일 자동재생 차단 해제용 첫 터치 처리
     if (isInitialClick) {
       bgm.play().catch(err => console.log("재생 대기"));
       isInitialClick = false;
     }
 
-    // 압축된 상태에서 누르면 -> 확대 애니메이션만 작동
+    // 압축된 상태(scale-75)에서 누르면 -> 확대 애니메이션만 작동
     if (container.classList.contains('scale-75')) {
       expandPlayer();
     } 
-    // 커져 있는 상태에서 누르면 -> 음소거 기능을 토글
+    // 커져 있는 상태에서 누르면 -> 실제 음소거 기능을 토글
     else {
       bgm.muted = !bgm.muted;
       
       if (bgm.muted) {
         icon.textContent = '🔇';
-        // 음소거 시 버튼 색상을 살짝 어둡게 변경하여 상태 표시 (선택 사항)
         container.classList.remove('bg-[#F3F4F6]', 'text-[#4B5563]');
         container.classList.add('bg-[#E5E7EB]', 'text-[#9CA3AF]');
       } else {
