@@ -3511,8 +3511,7 @@ const mountGango = (gangoContainer) => {
             document.getElementById('game-container').innerHTML = '';
         };
     </script>
-    <audio autoplay loop style="display:none;">
-  <source src="bgm.mp3" type="audio/mpeg">
-    </audio>
+    <!-- 왼쪽 위에 작게 나타나는 브라우저 내장 배경음악 플레이어 -->
+<audio id="bgm" src="bgm.mp3" controls autoplay loop class="fixed top-2 left-2 z-50 h-8 scale-75 origin-top-left opacity-80 hover:opacity-100"></audio>
 </body>
 </html>
