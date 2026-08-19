@@ -3511,7 +3511,77 @@ const mountGango = (gangoContainer) => {
             document.getElementById('game-container').innerHTML = '';
         };
     </script>
-    <!-- 왼쪽 위에 작게 나타나는 브라우저 내장 배경음악 플레이어 -->
-<audio id="bgm" src="bgm.mp3" controls autoplay loop class="fixed top-2 left-2 z-50 h-8 scale-75 origin-top-left opacity-80 hover:opacity-100"></audio>
+    <!-- 배경음악 파일 등록 -->
+<audio id="bgm" src="bgm.mp3" loop></audio>
+
+<!-- 
+  아이콘 전용 플레이어 (텍스트 제거 버전)
+  - 활성 상태: 투명도 100%, 정상 크기 (scale-100)
+  - 5초 후: 투명도 30%로 흐려지고, 크기가 70%로 축소 (scale-70)
+-->
+<div id="playerContainer" class="fixed top-2 left-2 z-50 flex items-center justify-center bg-black/60 text-white rounded-full w-10 h-10 shadow-md cursor-pointer transition-all duration-500 ease-in-out select-none origin-top-left scale-100 opacity-100">
+  <span id="playerIcon" class="text-xl">🔊</span>
+</div>
+    
+<script>
+  const bgm = document.getElementById('bgm');
+  const container = document.getElementById('playerContainer');
+  const icon = document.getElementById('playerIcon');
+
+  let compressTimeout = null;
+  let isInitialClick = true;
+
+  // 5초 동안 크게 보여주는 함수
+  function expandPlayer() {
+    clearTimeout(compressTimeout);
+    
+    // 원래 크기와 밝은 투명도로 복원
+    container.classList.remove('scale-70', 'opacity-30');
+    container.classList.add('scale-100', 'opacity-100');
+
+    // 다시 5초 후에 투명하게 압축 모드 진입
+    compressTimeout = setTimeout(compressPlayer, 5000);
+  }
+
+  // 5초 후 구석으로 작게 압축하는 함수
+  function compressPlayer() {
+    container.classList.remove('scale-100', 'opacity-100');
+    container.classList.add('scale-70', 'opacity-30'); // 크기 70% 축소 및 아주 투명하게 변경
+  }
+
+  // 클릭 이벤트 제어
+  container.addEventListener('click', function() {
+    // 모바일 자동재생 차단 우회용 첫 터치 처리
+    if (isInitialClick) {
+      bgm.play().catch(err => console.log("재생 대기"));
+      isInitialClick = false;
+    }
+
+    // 완전히 흐려지고 압축된 상태에서 눌렀을 때는 -> 확대 애니메이션만 먼저 보여줌
+    if (container.classList.contains('scale-70')) {
+      expandPlayer();
+    } 
+    // 이미 밝게 켜져 있는 상태에서 눌렀을 때는 -> 실제 음소거 기능을 토글함
+    else {
+      bgm.muted = !bgm.muted;
+      
+      if (bgm.muted) {
+        icon.textContent = '🔇';
+        container.classList.remove('bg-black/60');
+        container.classList.add('bg-red-900/60'); // 음소거 시 배경을 살짝 붉게 변경
+      } else {
+        icon.textContent = '🔊';
+        container.classList.remove('bg-red-900/60');
+        container.classList.add('bg-black/60');
+        if (bgm.paused) bgm.play();
+      }
+      
+      expandPlayer(); // 동작 후 다시 5초 대기 타이머 리셋
+    }
+  });
+
+  // 페이지 실행 직후 5초 세기 시작
+  compressTimeout = setTimeout(compressPlayer, 5000);
+</script>
 </body>
 </html>
