@@ -21,4 +21,4 @@ jobs:
       - name: OTP 업데이트 스크립트 실행
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: node update-otp.js
+        run: node otp.js
