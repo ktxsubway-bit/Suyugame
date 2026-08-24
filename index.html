@@ -3397,6 +3397,24 @@ const mountGango = (gangoContainer) => {
         </div>
     `;
 };
+
+const mountMicefunioioio = (miContainer) => {
+    // 대문자 C로 정확하게 일치시킴!
+    miContainer.innerHTML = `
+        <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
+                <iframe src="https://minefun.io/" class="absolute inset-0 w-full h-full border-0" allow="autoplay; gamepad; fullscreen" allowfullscreen></iframe>
+           
+            <div id="minefun-notice" class="absolute top-4 left-4 z-50 bg-slate-900/90 text-white p-4 rounded-xl shadow-xl backdrop-blur-sm transition-all duration-500 border border-slate-700/50 max-w-xs">
+                <p class="text-xs text-slate-400 mb-1">안내 (5초 후 사라집니다)</p>
+                <p class="text-sm font-medium mb-2 text-slate-200">
+                    해당 게임의 저작권은 <span class="text-teal-400 font-bold">Vectaria</span>에게 있습니다.
+                </p>
+                <a href="https://minefun.io/" target="_blank" class="inline-flex items-center text-xs text-teal-400 hover:text-teal-300 underline font-semibold">
+                    마인펀아이오 링크 바로가기 ↗
+                </a>
+            </div>
+        </div>
+    `;        
         
             
         // ==========================================
@@ -3439,7 +3457,8 @@ const mountGango = (gangoContainer) => {
   { id: 'dobbleContainer',     title: 'DOBBLE',           icon: 'circle',      color: 'bg-rose-100 text-rose-700',      mount: mountDobble },          
   { id: 'chessGameContainer',     title: 'Chess',           icon: 'chess-pawn',      color: 'bg-teal-100 text-teal-600',      mount: mountChess },
   { id: 'gunContainer',     title: 'ITEM & SURVIVAL (알파)',           icon: 'crosshair',      color: 'bg-teal-100 text-teal-600',      mount: mountGungun }, 
-  { id: 'mineFunContainer',     title: 'MINECRAT 1.8.8',           icon: 'box',      color: 'bg-teal-100 text-teal-600',      mount: mountMineFun },                        
+  { id: 'mineFunContainer',     title: 'MINECRAT 1.8.8',           icon: 'box',      color: 'bg-teal-100 text-teal-600',      mount: mountMineFun }, 
+  { id: 'miContainer',     title: 'MINEFUN IO',           icon: 'box',      color: 'bg-teal-100 text-teal-600',      mount: mountMicefunioioio },         
   // 3. 숫자 (오름차순)
   { id: 'clicker',    title: '10초 광클',           icon: 'mouse-pointer-click', color: 'bg-fuchsia-100 text-fuchsia-600', mount: mountClicker },
   { id: '2048',       title: '2048',               icon: 'layout-grid',          color: 'bg-amber-100 text-amber-800',    mount: mount2048 },
