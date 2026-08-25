@@ -33,7 +33,7 @@ async function updateOtp() {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    console.log(`[성공] 새 OTP가 생성되어 파이어베이스에 저장되었습니다: ${newOtp}`);
+    console.log(`[성공] 새 OTP가 생성되어 파이어베이스에 저장되었습니다`);
     
     // 2. 작업 성공 후 명시적 프로세스 종료 (필수)
     process.exit(0);
