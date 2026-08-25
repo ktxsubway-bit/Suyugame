@@ -3433,6 +3433,20 @@ const mountMicefunioioio = (miContainer) => {
         clearTimeout(timerId);
     };
 };
+
+
+const mountFighter = (fighterContainer) => {
+    fighterContainer.innerHTML = `
+        <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
+            <iframe 
+                src="https://ktxsubway-bit.github.io/PixelFighter/" 
+                class="absolute inset-0 w-full h-full border-0" 
+                allow="autoplay; gamepad; fullscreen" 
+                loading="lazy">
+            </iframe>
+        </div>
+    `;
+};        
         
             
         // ==========================================
@@ -3476,7 +3490,8 @@ const mountMicefunioioio = (miContainer) => {
   { id: 'chessGameContainer',     title: 'Chess',           icon: 'chess-pawn',      color: 'bg-teal-100 text-teal-600',      mount: mountChess },
   { id: 'gunContainer',     title: 'ITEM & SURVIVAL (알파)',           icon: 'crosshair',      color: 'bg-teal-100 text-teal-600',      mount: mountGungun }, 
   { id: 'mineFunContainer',     title: 'MINECRAT 1.8.8',           icon: 'box',      color: 'bg-teal-100 text-teal-600',      mount: mountMineFun }, 
-  { id: 'miContainer',     title: 'MINEFUN IO',           icon: 'box',      color: 'bg-teal-100 text-teal-600',      mount: mountMicefunioioio },         
+  { id: 'miContainer',     title: 'MINEFUN IO',           icon: 'box',      color: 'bg-teal-100 text-teal-600',      mount: mountMicefunioioio },  
+  { id: 'fighterContainer', title: 'Pixel Fighter', icon: 'person-standing', color: 'bg-red-100 text-red-600', mount: mountFighter },         
   // 3. 숫자 (오름차순)
   { id: 'clicker',    title: '10초 광클',           icon: 'mouse-pointer-click', color: 'bg-fuchsia-100 text-fuchsia-600', mount: mountClicker },
   { id: '2048',       title: '2048',               icon: 'layout-grid',          color: 'bg-amber-100 text-amber-800',    mount: mount2048 },
