@@ -27,7 +27,7 @@
                     user-select: none;
                     margin: 0;
                 ">
-                    접근이 거부되었습니다. 불법 복제는 당신을 감옥으로 이끕니다.
+                    지금 함부로 개발자 도구를 켜??? 너 정말 안되겠구나!!!
                 </div>
             `;
             throw new Error("Script execution stopped by security policy.");
