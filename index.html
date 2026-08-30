@@ -3557,77 +3557,52 @@ const mountFighter = (fighterContainer) => {
             document.getElementById('game-container').innerHTML = '';
         };
     </script>
-    <!-- 배경음악 파일 등록 -->
-<audio id="bgm" src="bgm.mp3" loop></audio>
+    <!-- 배경음악 파일 등록 --> 
+<audio id="bgm" src="bgm.mp3" loop></audio> 
 
-<!-- 음소거 버튼 UI (left-6을 right-6으로 변경하여 오른쪽 위로 이동) -->
-<div id="playerContainer" class="fixed top-[26px] right-6 z-50 flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] rounded-full w-9 h-9 shadow-sm cursor-pointer transition-all duration-500 ease-in-out select-none origin-center scale-100 opacity-100">
-  <span id="playerIcon" class="text-base flex items-center justify-center select-none">🔊</span>
-</div>
+<!-- 음소거 버튼 UI (항상 100% 크기와 불투명도 유지) --> 
+<div id="playerContainer" class="fixed top-[26px] right-6 z-50 flex items-center justify-center bg-[#F3F4F6] text-[#4B5563] rounded-full w-9 h-9 shadow-sm cursor-pointer transition-all duration-500 ease-in-out select-none origin-center scale-100 opacity-100"> 
+  <span id="playerIcon" class="text-base flex items-center justify-center select-none">🔊</span> 
+</div> 
 
-<script>
-  const bgm = document.getElementById('bgm');
-  const container = document.getElementById('playerContainer');
-  const icon = document.getElementById('playerIcon');
+<script> 
+  const bgm = document.getElementById('bgm'); 
+  const container = document.getElementById('playerContainer'); 
+  const icon = document.getElementById('playerIcon'); 
 
-  let compressTimeout = null;
+  // 1. [핵심 버그 수정] 화면 전체에 대한 첫 터치 감지 및 강제 재생 
+  function initAutoplay() { 
+    bgm.play().then(() => { 
+      window.removeEventListener('click', initAutoplay); 
+      window.removeEventListener('touchstart', initAutoplay); 
+    }).catch(err => { 
+      console.log("브라우저 자동재생 대기 중..."); 
+    }); 
+  } 
+  window.addEventListener('click', initAutoplay); 
+  window.addEventListener('touchstart', initAutoplay); 
 
-  // 1. [핵심 버그 수정] 화면 전체에 대한 첫 터치 감지 및 강제 재생
-  function initAutoplay() {
-    bgm.play().then(() => {
-      window.removeEventListener('click', initAutoplay);
-      window.removeEventListener('touchstart', initAutoplay);
-    }).catch(err => {
-      console.log("브라우저 자동재생 대기 중...");
-    });
-  }
-
-  window.addEventListener('click', initAutoplay);
-  window.addEventListener('touchstart', initAutoplay);
-
-
-  // 2. 플레이어 크기 애니메이션 제어 함수
-  function expandPlayer() {
-    clearTimeout(compressTimeout);
-    container.classList.remove('scale-75', 'opacity-30');
-    container.classList.add('scale-100', 'opacity-100');
-    compressTimeout = setTimeout(compressPlayer, 5000);
-  }
-
-  function compressPlayer() {
-    container.classList.remove('scale-100', 'opacity-100');
-    container.classList.add('scale-75', 'opacity-30');
-  }
-
-
-  // 3. 음소거 버튼 자체를 클릭했을 때의 동작
-  container.addEventListener('click', function(e) {
-    e.stopPropagation();
-
-    if (container.classList.contains('scale-75')) {
-      expandPlayer();
-    } 
-    else {
-      bgm.muted = !bgm.muted;
+  // 2. 음소거 버튼 자체를 클릭했을 때의 동작 
+  container.addEventListener('click', function(e) { 
+    e.stopPropagation(); 
+    
+    // 음소거 상태 토글
+    bgm.muted = !bgm.muted; 
+    
+    if (bgm.muted) { 
+      icon.textContent = '🔇'; 
+      container.classList.remove('bg-[#F3F4F6]', 'text-[#4B5563]'); 
+      container.classList.add('bg-[#E5E7EB]', 'text-[#9CA3AF]'); 
+    } else { 
+      icon.textContent = '🔊'; 
+      container.classList.remove('bg-[#E5E7EB]', 'text-[#9CA3AF]'); 
+      container.classList.add('bg-[#F3F4F6]', 'text-[#4B5563]'); 
       
-      if (bgm.muted) {
-        icon.textContent = '🔇';
-        container.classList.remove('bg-[#F3F4F6]', 'text-[#4B5563]');
-        container.classList.add('bg-[#E5E7EB]', 'text-[#9CA3AF]');
-      } else {
-        icon.textContent = '🔊';
-        container.classList.remove('bg-[#E5E7EB]', 'text-[#9CA3AF]');
-        container.classList.add('bg-[#F3F4F6]', 'text-[#4B5563]');
-        
-        if (bgm.paused) {
-          bgm.play().catch(err => console.log("재생 실패"));
-        }
-      }
-      expandPlayer();
-    }
-  });
-
-  compressTimeout = setTimeout(compressPlayer, 5000);
+      if (bgm.paused) { 
+        bgm.play().catch(err => console.log("재생 실패")); 
+      } 
+    } 
+  }); 
 </script>
 </body>
 </html>
