@@ -3464,7 +3464,7 @@ const mountRicejump3 = (ricejump3Container) => {
     ricejump3Container.innerHTML = `
         <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
             <iframe 
-                src="https://ricejump.kro.kr/" 
+                src="http://ricejump3.kro.kr/" 
                 class="w-full h-full border-0 block"
                 allow="autoplay; keyboard; gamepad; fullscreen" 
                 allowfullscreen>
@@ -3493,7 +3493,7 @@ const mountRicejump3 = (ricejump3Container) => {
   { id: 'math', title: '산수 퀴즈', icon: 'calculator', color: 'bg-indigo-100 text-indigo-700', mount: mountMath },
   { id: 'subway', title: '서브웨이 런', icon: 'train-front', color: 'bg-zinc-200 text-zinc-800', mount: mountSubwayRun },
   { id: 'color', title: '색깔 찾기', icon: 'palette', color: 'bg-lime-100 text-lime-700', mount: mountColor },
-  { id: 'baseball', title: '숫자 야구', icon: 'baseball', color: 'bg-purple-100 text-purple-600', mount: mountBaseball },
+  { id: 'baseball', title: '숫자 야구', icon: 'binary', color: 'bg-purple-100 text-purple-600', mount: mountBaseball },
   { id: 'snakeContainer', title: '스네이크 (알파)', icon: 'worm', color: 'bg-red-100 text-red-600', mount: mountNewsnake },
   { id: 'penalty', title: '승부차기', icon: 'footprints', color: 'bg-teal-100 text-teal-600', mount: mountPenaltyKick },
   { id: 'cityfighterContainer', title: '시티 브롤', icon: 'swords', color: 'bg-blue-100 text-blue-600', mount: mountCityfighter },
@@ -3517,14 +3517,15 @@ const mountRicejump3 = (ricejump3Container) => {
   { id: 'mineFunContainer', title: 'MINECRAT 1.8.8', icon: 'box', color: 'bg-amber-100 text-amber-700', mount: mountMineFun },
   { id: 'miContainer', title: 'MINEFUN IO', icon: 'boxes', color: 'bg-blue-100 text-blue-700', mount: mountMicefunioioio },
   { id: 'fighterContainer', title: 'Pixel Fighter', icon: 'swords', color: 'bg-emerald-100 text-emerald-700', mount: mountFighter },
-  { id: 'ricejump3Container', title: 'RiceJump', icon: 'arrow-up-to-line', color: 'bg-rose-100 text-rose-600', mount: mountRicejump3 },
+  { id: 'ricejump3Container', title: 'RiceJump', icon: 'staircase', color: 'bg-rose-100 text-rose-600', mount: mountRicejump3 },
 
   // 3. 숫자 (오름차순)
   // { id: 'carContainer', title: '4000KM/H! 무한 드리프트 (알파)', icon: 'car-front', color: 'bg-pink-100 text-pink-600', mount: mountCarcar },
-  { id: 'clicker', title: '10초 광클', icon: 'mouse-pointer-click', color: 'bg-fuchsia-100 text-fuchsia-600', mount: mountClicker },
+  { id: 'clicker', title: '10초 광클', icon: 'mouse-pointer-click', color: 'bg-fuchsia-100 text-fuchsia-600', mount: mountclicker },
   { id: '2048', title: '2048', icon: 'layout-grid', color: 'bg-yellow-100 text-yellow-800', mount: mount2048 },
   { id: 'jump3d', title: '3D 점프맵', icon: 'layers', color: 'bg-cyan-100 text-cyan-600', mount: mount3DJumpMap }
 ];
+
 
         // 게임 메뉴 렌더링
         const gridContainer = document.getElementById('games-grid');
