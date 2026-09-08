@@ -3469,46 +3469,115 @@ const mountRicejump3 = (ricejump3Container) => {
 };   
 
 
-const mountSordgame = (sgs123Container) => {
-    sgs123Container.innerHTML = `
+const mountSordgame = (sordgameContainer) => {
+    // 대문자 C로 정확하게 일치시킴!
+    sordContainer.innerHTML = `
         <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
-            <iframe 
-                src="https://ktxsubway-bit.github.io/wafgame/" 
-                class="w-full h-full border-0 block"
-                allow="autoplay; keyboard; gamepad; fullscreen" 
-                allowfullscreen>
-            </iframe>
+                <iframe src="https://ktxsubway-bit.github.io/wafgame" class="absolute inset-0 w-full h-full border-0" allow="autoplay; gamepad; fullscreen" allowfullscreen></iframe>
+           
+            <div id="cord-notice" class="absolute top-4 left-4 z-50 bg-slate-900/90 text-white p-4 rounded-xl shadow-xl backdrop-blur-sm transition-all duration-500 border border-slate-700/50 max-w-xs">
+                <p class="text-xs text-slate-400 mb-1">안내 (5초 후 사라집니다)</p>
+                <p class="text-sm font-medium mb-2 text-slate-200">
+                    해당 게임의 저작권은 <span class="text-teal-400 font-bold">NBS</span>에게 있습니다.
+                </p>
+                <a href="https://vidkidz.tistory.com/5291" target="_blank" class="inline-flex items-center text-xs text-teal-400 hover:text-teal-300 underline font-semibold">
+                    검 강화하기 링크 바로가기 ↗
+                </a>
+            </div>
         </div>
-    `;
+    `;        
+
+    // 🕒 5초 뒤에 안내문 박스를 화면에서 숨기는 기능
+    const timerId = setTimeout(() => {
+        const notice = document.getElementById('cord-notice');
+        if (notice) {
+            // 서서히 투명해지면서 사라지도록 스타일 처리
+            notice.style.opacity = '0';
+            notice.style.transform = 'translateY(-10px)';
+            // 애니메이션이 끝난 후 완전히 숨김
+            setTimeout(() => notice.classList.add('hidden'), 500);
+        }
+    }, 5000);
+
+    // 다른 게임으로 나갈 때 타이머 잔재를 깨끗이 청소(클린업)해 줍니다.
+    return () => {
+        clearTimeout(timerId);
+    };
 };
 
 
 
 const mountExit = (exitContainer) => {
+    // 대문자 C로 정확하게 일치시킴!
     exitContainer.innerHTML = `
         <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
-            <iframe 
-                src="https://ktxsubway-bit.github.io/exitgame" 
-                class="w-full h-full border-0 block"
-                allow="autoplay; keyboard; gamepad; fullscreen" 
-                allowfullscreen>
-            </iframe>
+                <iframe src="https://ktxsubway-bit.github.io/exitgame" class="absolute inset-0 w-full h-full border-0" allow="autoplay; gamepad; fullscreen" allowfullscreen></iframe>
+           
+            <div id="exit-notice" class="absolute top-4 left-4 z-50 bg-slate-900/90 text-white p-4 rounded-xl shadow-xl backdrop-blur-sm transition-all duration-500 border border-slate-700/50 max-w-xs">
+                <p class="text-xs text-slate-400 mb-1">안내 (5초 후 사라집니다)</p>
+                <p class="text-sm font-medium mb-2 text-slate-200">
+                    해당 게임의 저작권은 <span class="text-teal-400 font-bold">구토할배 (YunoGT)</span>에게 있습니다.
+                </p>
+                <a href="https://vidkidz.tistory.com/1196" target="_blank" class="inline-flex items-center text-xs text-teal-400 hover:text-teal-300 underline font-semibold">
+                    감옥탈출 바로가기 ↗
+                </a>
+            </div>
         </div>
-    `;
-};    
+    `;        
+
+    // 🕒 5초 뒤에 안내문 박스를 화면에서 숨기는 기능
+    const timerId = setTimeout(() => {
+        const notice = document.getElementById('exit-notice');
+        if (notice) {
+            // 서서히 투명해지면서 사라지도록 스타일 처리
+            notice.style.opacity = '0';
+            notice.style.transform = 'translateY(-10px)';
+            // 애니메이션이 끝난 후 완전히 숨김
+            setTimeout(() => notice.classList.add('hidden'), 500);
+        }
+    }, 5000);
+
+    // 다른 게임으로 나갈 때 타이머 잔재를 깨끗이 청소(클린업)해 줍니다.
+    return () => {
+        clearTimeout(timerId);
+    };
+};   
         
 const mountBaseballgame = (baseballgameContainer) => {
+    // 대문자 C로 정확하게 일치시킴!
     baseballgameContainer.innerHTML = `
         <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
-            <iframe 
-                src="https://playentry.org/iframe/61d66262af37b900256487dd" 
-                class="w-full h-full border-0 block"
-                allow="autoplay; keyboard; gamepad; fullscreen" 
-                allowfullscreen>
-            </iframe>
+                <iframe src="https://playentry.org/iframe/61d66262af37b900256487dd" class="absolute inset-0 w-full h-full border-0" allow="autoplay; gamepad; fullscreen" allowfullscreen></iframe>
+           
+            <div id="base-notice" class="absolute top-4 left-4 z-50 bg-slate-900/90 text-white p-4 rounded-xl shadow-xl backdrop-blur-sm transition-all duration-500 border border-slate-700/50 max-w-xs">
+                <p class="text-xs text-slate-400 mb-1">안내 (5초 후 사라집니다)</p>
+                <p class="text-sm font-medium mb-2 text-slate-200">
+                    해당 게임의 저작권은 <span class="text-teal-400 font-bold">행복한유저 님</span>에게 있습니다.
+                </p>
+                <a href="https://playentry.org/iframe/61d66262af37b900256487dd" target="_blank" class="inline-flex items-center text-xs text-teal-400 hover:text-teal-300 underline font-semibold">
+                    풀카운트 바로가기 ↗
+                </a>
+            </div>
         </div>
-    `;
-};           
+    `;        
+
+    // 🕒 5초 뒤에 안내문 박스를 화면에서 숨기는 기능
+    const timerId = setTimeout(() => {
+        const notice = document.getElementById('base-notice');
+        if (notice) {
+            // 서서히 투명해지면서 사라지도록 스타일 처리
+            notice.style.opacity = '0';
+            notice.style.transform = 'translateY(-10px)';
+            // 애니메이션이 끝난 후 완전히 숨김
+            setTimeout(() => notice.classList.add('hidden'), 500);
+        }
+    }, 5000);
+
+    // 다른 게임으로 나갈 때 타이머 잔재를 깨끗이 청소(클린업)해 줍니다.
+    return () => {
+        clearTimeout(timerId);
+    };
+};          
             
         // ==========================================
         // 메인 데이터 & 라우팅 (전체 28개 게임 - 한글/영어/숫자순 정렬)
