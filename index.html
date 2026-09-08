@@ -3486,7 +3486,7 @@ const mountExit = async (exitContainer) => {
     const ruffleScriptUrl =
         "https://unpkg.com/@ruffle-rs/ruffle@latest/ruffle.js";
 
-    // Ruffle 스크립트가 아직 로드되지 않았으면 동적으로 추가
+    // 1. Ruffle 스크립트 동적 로드
     if (!window.RufflePlayer) {
         await new Promise((resolve, reject) => {
             const script = document.createElement("script");
@@ -3501,6 +3501,7 @@ const mountExit = async (exitContainer) => {
         });
     }
 
+    // 2. 컨테이너 HTML 구조 생성
     exitContainer.innerHTML = `
         <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
             <div 
@@ -3514,8 +3515,19 @@ const mountExit = async (exitContainer) => {
         "#ruffle-game-container"
     );
 
+    // 3. Ruffle 플레이어 생성 및 옵션 적용 (버튼 작동 문제 해결)
     const ruffle = window.RufflePlayer.newest();
     const player = ruffle.createPlayer();
+
+    // 메뉴 버튼 및 ActionScript 클릭 이벤트 정상 동작을 위한 옵션 설정
+    player.config = {
+        allowScriptAccess: true,      // 외부/내부 스크립트 실행 허용
+        autoplay: "on",               // 오디오 및 애니메이션 자동 실행
+        unmuteOverlay: "hidden",      // 음소거 오버레이 클릭 방해 제거
+        letterbox: "on",              // 화면 비율 자동 조절
+        forceScale: true,             // 플래시 내부 좌표계 클릭 이벤트 동기화
+        warnOnUnsupportedContent: false
+    };
 
     player.style.width = "100%";
     player.style.height = "100%";
@@ -3523,13 +3535,18 @@ const mountExit = async (exitContainer) => {
 
     gameContainer.appendChild(player);
 
-    // 한글 파일명은 encodeURIComponent로 처리
-    const swfPath = encodeURI(
-        "./감옥탈출-리마스터-플래시게임.swf"
-    );
+    // 4. 한글 파일명 안전 인코딩 처리
+    const fileName = encodeURIComponent("감옥탈출-리마스터-플래시게임.swf");
+    const swfPath = `./${fileName}`;
 
-    await player.load(swfPath);
+    // 5. SWF 파일 로드
+    try {
+        await player.load(swfPath);
+    } catch (error) {
+        console.error("SWF 파일을 로드하는 중 오류가 발생했습니다:", error);
+    }
 };
+
 
         
         
