@@ -3466,53 +3466,69 @@ const mountRicejump3 = (ricejump3Container) => {
             <iframe src="https://ricejump3.kro.kr" class="absolute inset-0 w-full h-full border-0" allow="autoplay; gamepad; fullscreen" allowfullscreen></iframe>
         </div>
     `;
-};       
+};   
+
+
+const mountSordgame = (sgs123Container) => {
+    sgs123Container.innerHTML = `
+        <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
+            <iframe 
+                src="https://ktxsubway-bit.github.io/wafgame/" 
+                class="w-full h-full border-0 block"
+                allow="autoplay; keyboard; gamepad; fullscreen" 
+                allowfullscreen>
+            </iframe>
+        </div>
+    `;
+};
+        
             
         // ==========================================
         // 메인 데이터 & 라우팅 (전체 28개 게임 - 한글/영어/숫자순 정렬)
         // ==========================================
         const GAMES = [
   // 1. 한글 (가나다순)
-  { id: 'rps', title: '가위바위보', icon: 'scissors', color: 'bg-orange-100 text-orange-700', mount: mountRps },
+  { id: 'rps', title: '가위바위보', icon: 'hand-scissors', color: 'bg-fuchsia-100 text-fuchsia-600', mount: mountRps },
   // { id: 'airstrike', title: '가자! 점자!', icon: 'braille', color: 'bg-emerald-100 text-emerald-700', mount: mountAirstrike },
-  { id: 'dishContainer', title: '감옥탈출', icon: 'key-round', color: 'bg-pink-100 text-pink-600', mount: mountDish },
+  { id: 'dishContainer', title: '감옥탈출', icon: 'lock-keyhole', color: 'bg-sky-100 text-sky-700', mount: mountDish },
+  { id: 'sgs123Container', title: '검 강화하기', icon: 'sword', color: 'bg-orange-100 text-orange-700', mount: mountSordgame },
+  { id: 'fruit', title: '과일 받기', icon: 'apple', color: 'bg-violet-100 text-violet-700', mount: mountFruit },
   // { id: 'gangoContainer', title: '광고', icon: 'megaphone', color: 'bg-rose-100 text-rose-600', mount: mountGango },
-  { id: 'fruit', title: '과일 받기', icon: 'apple', color: 'bg-blue-100 text-blue-700', mount: mountFruit },
   // { id: 'fps', title: '김밥천국 시뮬레이터', icon: 'cooking-pot', color: 'bg-yellow-100 text-yellow-800', mount: mountFps },
-  { id: 'fps', title: '김밥천국 타이쿤', icon: 'store', color: 'bg-teal-100 text-teal-700', mount: mountFps },
-  { id: 'typing', title: '단어 타자', icon: 'keyboard', color: 'bg-violet-100 text-violet-700', mount: mountTyping },
+  { id: 'fps', title: '김밥천국 타이쿤', icon: 'store', color: 'bg-pink-100 text-pink-600', mount: mountFps },
+  { id: 'typing', title: '단어 타자', icon: 'keyboard', color: 'bg-amber-100 text-amber-700', mount: mountTyping },
   // { id: 'whack', title: '두더지 잡기', icon: 'hammer', color: 'bg-amber-100 text-amber-700', mount: mountWhack },
-  { id: 'gather', title: '먹이 줍기', icon: 'cookie', color: 'bg-sky-100 text-sky-600', mount: mountGather },
-  { id: 'reaction', title: '반응속도', icon: 'zap', color: 'bg-fuchsia-100 text-fuchsia-600', mount: mountReaction },
-  { id: 'breakout', title: '벽돌 깨기', icon: 'brick-wall', color: 'bg-cyan-100 text-cyan-700', mount: mountBreakout },
-  { id: 'math', title: '산수 퀴즈', icon: 'calculator', color: 'bg-indigo-100 text-indigo-700', mount: mountMath },
+  { id: 'gather', title: '먹이 줍기', icon: 'hand', color: 'bg-indigo-100 text-indigo-700', mount: mountGather },
+  { id: 'reaction', title: '반응속도', icon: 'zap', color: 'bg-cyan-100 text-cyan-700', mount: mountReaction },
+  { id: 'breakout', title: '벽돌 깨기', icon: 'brick-wall', color: 'bg-lime-100 text-lime-700', mount: mountBreakout },
+  { id: 'math', title: '산수 퀴즈', icon: 'calculator', color: 'bg-rose-100 text-rose-600', mount: mountMath },
+  { id: 'color', title: '색깔 찾기', icon: 'palette', color: 'bg-teal-100 text-teal-700', mount: mountColor },
   { id: 'subway', title: '서브웨이 런', icon: 'train-front', color: 'bg-zinc-200 text-zinc-800', mount: mountSubwayRun },
-  { id: 'color', title: '색깔 찾기', icon: 'palette', color: 'bg-lime-100 text-lime-700', mount: mountColor },
-  { id: 'baseball', title: '숫자 야구', icon: 'binary', color: 'bg-purple-100 text-purple-600', mount: mountBaseball },
+  { id: 'baseball', title: '숫자 야구', icon: 'baseball', color: 'bg-purple-100 text-purple-600', mount: mountBaseball },
   { id: 'snakeContainer', title: '스네이크 (알파)', icon: 'worm', color: 'bg-red-100 text-red-600', mount: mountNewsnake },
-  { id: 'penalty', title: '승부차기', icon: 'footprints', color: 'bg-teal-100 text-teal-600', mount: mountPenaltyKick },
-  { id: 'cityfighterContainer', title: '시티 브롤', icon: 'swords', color: 'bg-blue-100 text-blue-600', mount: mountCityfighter },
-  { id: 'motorcycle', title: '오토바이 3D', icon: 'bike', color: 'bg-orange-100 text-orange-600', mount: mountMotorcycle },
-  { id: 'memory', title: '카드 맞추기', icon: 'brain-circuit', color: 'bg-cyan-100 text-cyan-600', mount: mountMemory },
-  { id: 'chatContainer', title: '커뮤니티', icon: 'message-square-text', color: 'bg-violet-100 text-violet-600', mount: mountChats },
-  { id: 'timing', title: '타이밍 맞추기', icon: 'timer', color: 'bg-pink-100 text-pink-700', mount: mountTiming },
-  { id: 'ufo', title: '탕탕 이모지 특공대', icon: 'crosshair', color: 'bg-amber-100 text-amber-600', mount: mountUfo },
-  { id: 'tetris', title: '테트리스', icon: 'grid-2x2', color: 'bg-emerald-100 text-emerald-600', mount: mountTetris },
+  { id: 'penalty', title: '승부차기', icon: 'goal', color: 'bg-blue-100 text-blue-700', mount: mountPenaltyKick },
+  { id: 'cityfighterContainer', title: '시티 브롤', icon: 'swords', color: 'bg-yellow-100 text-yellow-800', mount: mountCityfighter },
+  { id: 'motorcycle', title: '오토바이 3D', icon: 'bike', color: 'bg-emerald-100 text-emerald-700', mount: mountMotorcycle },
+  { id: 'memory', title: '카드 맞추기', icon: 'brain-circuit', color: 'bg-orange-100 text-orange-600', mount: mountMemory },
+  { id: 'chatContainer', title: '커뮤니티', icon: 'messages-square', color: 'bg-lime-100 text-lime-800', mount: mountChats },
+  { id: 'timing', title: '타이밍 맞추기', icon: 'timer', color: 'bg-violet-100 text-violet-700', mount: mountTiming },
+  { id: 'ufo', title: '탕탕 이모지 특공대', icon: 'crosshair', color: 'bg-pink-100 text-pink-700', mount: mountUfo },
+  { id: 'tetris', title: '테트리스', icon: 'grid-2x2', color: 'bg-sky-100 text-sky-600', mount: mountTetris },
   { id: 'tictactoe', title: '틱택토', icon: 'grid-3x3', color: 'bg-fuchsia-100 text-fuchsia-700', mount: mountTicTacToe },
-  { id: 'simon', title: '패턴 기억', icon: 'list-ordered', color: 'bg-rose-100 text-rose-700', mount: mountSimon },
-  { id: 'bomb', title: '폭탄 피하기', icon: 'bomb', color: 'bg-lime-100 text-lime-800', mount: mountBomb },
-  { id: 'fixie', title: '픽시 자전거', icon: 'gauge', color: 'bg-sky-100 text-sky-700', mount: mountBikeJump },
+  { id: 'simon', title: '패턴 기억', icon: 'brain', color: 'bg-indigo-100 text-indigo-600', mount: mountSimon },
+  { id: 'bomb', title: '폭탄 피하기', icon: 'bomb', color: 'bg-rose-100 text-rose-700', mount: mountBomb },
+  { id: 'fixie', title: '픽시 자전거', icon: 'bike', color: 'bg-cyan-100 text-cyan-600', mount: mountBikeJump },
 
   // 2. 영어 (알파벳순)
-  { id: 'bellContainer', title: 'BELLRUN!', icon: 'bell-ring', color: 'bg-indigo-100 text-indigo-600', mount: mountgemini },
+  { id: 'bellContainer', title: 'BELLRUN!', icon: 'bell-ring', color: 'bg-amber-100 text-amber-600', mount: mountgemini },
   { id: 'chessGameContainer', title: 'Chess', icon: 'crown', color: 'bg-red-100 text-red-700', mount: mountChess },
   { id: 'container', title: 'DEADSHOT', icon: 'target', color: 'bg-zinc-200 text-zinc-800', mount: mountGun },
   { id: 'dobbleContainer', title: 'DOBBLE', icon: 'disc', color: 'bg-purple-100 text-purple-700', mount: mountDobble },
   { id: 'gunContainer', title: 'ITEM & SURVIVAL (알파)', icon: 'shield-alert', color: 'bg-orange-100 text-orange-700', mount: mountGungun },
-  { id: 'mineFunContainer', title: 'MINECRAT 1.8.8', icon: 'box', color: 'bg-amber-100 text-amber-700', mount: mountMineFun },
+  { id: 'mineFunContainer', title: 'MINECRAT 1.8.8', icon: 'pickaxe', color: 'bg-yellow-100 text-yellow-800', mount: mountMineFun },
   { id: 'miContainer', title: 'MINEFUN IO', icon: 'boxes', color: 'bg-blue-100 text-blue-700', mount: mountMicefunioioio },
   { id: 'fighterContainer', title: 'Pixel Fighter', icon: 'swords', color: 'bg-emerald-100 text-emerald-700', mount: mountFighter },
-  { id: 'ricejump3Container', title: 'RiceJump', icon: 'trending-up', color: 'bg-rose-100 text-rose-600', mount: mountRicejump3 },
+  { id: 'ricejump3Container', title: 'RiceJump', icon: 'gamepad-2', color: 'bg-rose-100 text-rose-600', mount: mountRicejump3 },
 
   // 3. 숫자 (오름차순)
   // { id: 'carContainer', title: '4000KM/H! 무한 드리프트 (알파)', icon: 'car-front', color: 'bg-pink-100 text-pink-600', mount: mountCarcar },
@@ -3520,6 +3536,7 @@ const mountRicejump3 = (ricejump3Container) => {
   { id: '2048', title: '2048', icon: 'layout-grid', color: 'bg-yellow-100 text-yellow-800', mount: mount2048 },
   { id: 'jump3d', title: '3D 점프맵', icon: 'layers', color: 'bg-cyan-100 text-cyan-600', mount: mount3DJumpMap }
 ];
+
 
 
 
