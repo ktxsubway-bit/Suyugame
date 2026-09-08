@@ -3498,7 +3498,7 @@ const mountExit = (exitContainer) => {
 };    
         
 const mountBaseballgame = (baseballgameContainer) => {
-    exitContainer.innerHTML = `
+    baseballgameContainer.innerHTML = `
         <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
             <iframe 
                 src="https://playentry.org/iframe/61d66262af37b900256487dd" 
@@ -3532,7 +3532,7 @@ const mountBaseballgame = (baseballgameContainer) => {
   { id: 'penalty', title: '승부차기', icon: 'goal', color: 'bg-sky-100 text-sky-700', mount: mountPenaltyKick },
   { id: 'cityfighterContainer', title: '시티 브롤', icon: 'swords', color: 'bg-red-100 text-red-700', mount: mountCityfighter },
   { id: 'motorcycle', title: '오토바이 3D', icon: 'bike', color: 'bg-teal-100 text-teal-700', mount: mountMotorcycle },
-  { id: 'baseballgameContainer', title: '진짜 야구', icon: 'baseball', color: 'bg-blue-100 text-blue-800', mount: mountBaseballgame },
+  { id: 'baseballgameContainer', title: '진짜 야구', icon: 'trophy', color: 'bg-blue-100 text-blue-800', mount: mountBaseballgame },
   { id: 'memory', title: '카드 맞추기', icon: 'brain-circuit', color: 'bg-pink-100 text-pink-600', mount: mountMemory },
   { id: 'chatContainer', title: '커뮤니티', icon: 'message-square-text', color: 'bg-lime-100 text-lime-800', mount: mountChats },
   { id: 'timing', title: '타이밍 맞추기', icon: 'timer', color: 'bg-indigo-100 text-indigo-700', mount: mountTiming },
