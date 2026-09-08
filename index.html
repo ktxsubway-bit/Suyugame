@@ -3481,6 +3481,57 @@ const mountSordgame = (sgs123Container) => {
         </div>
     `;
 };
+
+const mountExit = async (exitContainer) => {
+    const ruffleScriptUrl =
+        "https://unpkg.com/@ruffle-rs/ruffle@latest/ruffle.js";
+
+    // Ruffle 스크립트가 아직 로드되지 않았으면 동적으로 추가
+    if (!window.RufflePlayer) {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+
+            script.src = ruffleScriptUrl;
+            script.onload = resolve;
+            script.onerror = () => {
+                reject(new Error("Ruffle 스크립트를 불러오지 못했습니다."));
+            };
+
+            document.head.appendChild(script);
+        });
+    }
+
+    exitContainer.innerHTML = `
+        <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
+            <div 
+                id="ruffle-game-container"
+                class="w-full h-full">
+            </div>
+        </div>
+    `;
+
+    const gameContainer = sgs123Container.querySelector(
+        "#ruffle-game-container"
+    );
+
+    const ruffle = window.RufflePlayer.newest();
+    const player = ruffle.createPlayer();
+
+    player.style.width = "100%";
+    player.style.height = "100%";
+    player.style.display = "block";
+
+    gameContainer.appendChild(player);
+
+    // 한글 파일명은 encodeURIComponent로 처리
+    const swfPath = encodeURI(
+        "./감옥탈출-리마스터-플래시게임.swf"
+    );
+
+    await player.load(swfPath);
+};
+
+        
         
             
         // ==========================================
@@ -3490,7 +3541,7 @@ const mountSordgame = (sgs123Container) => {
   // 1. 한글 (가나다순)
   { id: 'rps', title: '가위바위보', icon: 'scissors', color: 'bg-fuchsia-100 text-fuchsia-600', mount: mountRps },
   // { id: 'airstrike', title: '가자! 점자!', icon: 'braille', color: 'bg-emerald-100 text-emerald-700', mount: mountAirstrike },
-  { id: 'dishContainer', title: '감옥탈출', icon: 'lock-keyhole', color: 'bg-sky-100 text-sky-700', mount: mountDish },
+  { id: 'exitContainer', title: '감옥탈출', icon: 'lock-keyhole', color: 'bg-sky-100 text-sky-700', mount: mountExit },
   { id: 'sgs123Container', title: '검 강화하기', icon: 'sword', color: 'bg-orange-100 text-orange-700', mount: mountSordgame },
   { id: 'fruit', title: '과일 받기', icon: 'apple', color: 'bg-violet-100 text-violet-700', mount: mountFruit },
   // { id: 'gangoContainer', title: '광고', icon: 'megaphone', color: 'bg-rose-100 text-rose-600', mount: mountGango },
