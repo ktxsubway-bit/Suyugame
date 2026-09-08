@@ -3482,88 +3482,20 @@ const mountSordgame = (sgs123Container) => {
     `;
 };
 
-const mountExit = async (exitContainer, onBackToMenu) => {
-    const ruffleScriptUrl =
-        "https://unpkg.com/@ruffle-rs/ruffle@latest/ruffle.js";
 
-    // 1. Ruffle 스크립트 로드
-    if (!window.RufflePlayer) {
-        await new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = ruffleScriptUrl;
-            script.onload = resolve;
-            script.onerror = () => {
-                reject(new Error("Ruffle 스크립트를 불러오지 못했습니다."));
-            };
-            document.head.appendChild(script);
-        });
-    }
 
-    // 2. 외부 '메뉴로' 버튼 이벤트 차단 및 연결
-    // (상단 헤더에 있는 '메뉴로' 버튼 요소를 바인딩)
-    const backBtn = document.querySelector("#back-btn") || document.querySelector("button:has-text('메뉴로')");
-    
-    // 모바일 터치 및 클릭 반응성 강화 함수
-    const handleBack = (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // Ruffle로 이벤트가 씹히거나 취소되는 현상 차단
-        
-        if (typeof onBackToMenu === "function") {
-            onBackToMenu();
-        } else {
-            // 기본 동작 (필요 시 주석 해제하거나 이동 경로 지정)
-            // location.href = "/"; 
-            console.log("메뉴로 이동합니다.");
-        }
-    };
-
-    if (backBtn) {
-        // 모바일 터치 이벤트와 일반 클릭 이벤트를 둘 다 등록
-        backBtn.addEventListener("click", handleBack);
-        backBtn.addEventListener("touchstart", handleBack, { passive: false });
-    }
-
-    // 3. 게임 컨테이너 HTML 구조 생성
+const mountExit = (exitContainer) => {
     exitContainer.innerHTML = `
         <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
-            <div 
-                id="ruffle-game-container"
-                class="w-full h-full">
-            </div>
+            <iframe 
+                src="https://ktxsubway-bit.github.io/exitgame" 
+                class="w-full h-full border-0 block"
+                allow="autoplay; keyboard; gamepad; fullscreen" 
+                allowfullscreen>
+            </iframe>
         </div>
     `;
-
-    const gameContainer = exitContainer.querySelector("#ruffle-game-container");
-
-    // 4. Ruffle 플레이어 설정
-    const ruffle = window.RufflePlayer.newest();
-    const player = ruffle.createPlayer();
-
-    player.config = {
-        allowScriptAccess: true,
-        autoplay: "on",
-        unmuteOverlay: "hidden",
-        letterbox: "on"
-    };
-
-    player.style.width = "100%";
-    player.style.height = "100%";
-    player.style.display = "block";
-
-    gameContainer.appendChild(player);
-
-    // 5. SWF 파일 로드
-    const fileName = encodeURIComponent("감옥탈출-리마스터-플래시게임.swf");
-    const swfPath = `./${fileName}`;
-
-    try {
-        await player.load(swfPath);
-    } catch (error) {
-        console.error("SWF 로드 실패:", error);
-    }
-};
-
-        
+};        
         
             
         // ==========================================
