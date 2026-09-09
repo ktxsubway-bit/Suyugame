@@ -93,10 +93,17 @@
     <div id="toast-message" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl z-[200] hidden transition-opacity duration-300 opacity-0 text-center font-bold whitespace-nowrap w-max max-w-[90vw]"></div>
 
     <!-- 로딩 화면 -->
-    <div id="loading-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white transition-opacity duration-300">
-        <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-4 text-slate-600 font-medium">NOW LOADING...</p>
+<div id="loading-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white transition-opacity duration-300">
+    <!-- 우측 상단 12세 이용가 마크 -->
+    <div class="absolute top-4 right-4 w-12 md:w-16">
+        <img src="12plus.png" alt="12세 이용가" class="w-full h-auto drop-shadow-sm">
     </div>
+
+    <!-- 중앙 로딩 스피너 및 텍스트 -->
+    <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+    <p class="mt-4 text-slate-600 font-medium">NOW LOADING...</p>
+</div>
+
 
     <!-- 메인 메뉴 화면 -->
     <div id="menu-screen" class="max-w-4xl mx-auto min-h-screen px-6 py-12 w-full hidden">
