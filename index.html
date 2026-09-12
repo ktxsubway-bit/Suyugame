@@ -145,9 +145,13 @@
                 메뉴로
             </button>
             <h2 id="game-header-title" class="text-xl font-black flex items-center text-slate-800"></h2>
-            <div class="w-20"></div> <!-- 밸런스용 빈 공간 -->
+            
+            <!-- [수정] 전체화면 토글 버튼 추가 -->
+            <button onclick="window.toggleFullScreen()" class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600 flex items-center justify-center">
+                <i id="fs-icon-global" data-lucide="maximize" class="w-6 h-6"></i>
+            </button>
         </header>
-       
+        
         <main id="game-container" class="w-full bg-slate-50 relative flex flex-col items-center justify-center p-4 overflow-hidden">
             <!-- 게임 내용이 여기에 마운트됩니다 -->
         </main>
