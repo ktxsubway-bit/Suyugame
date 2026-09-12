@@ -1,64 +1,31 @@
 (function() {
     let devToolsOpen = false;
-    let originalBodyContent = null;
-    let overlayElement = null;
 
-    // 1. 차단 오버레이 생성 함수
-    function createOverlay() {
-        if (overlayElement) return;
-        overlayElement = document.createElement('div');
-        overlayElement.id = 'security-overlay';
-        overlayElement.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: red;
-            background-color: black;
-            user-select: none;
-            z-index: 999999;
-        `;
-        overlayElement.innerText = '접근이 거부되었습니다.';
-        document.body.appendChild(overlayElement);
-    }
-
-    // 2. 보안 조치 활성화 (개발자 도구 열림)
+    // 1. 보안 동작 처리 (콘솔 경고 출력만 수행)
     function triggerSecurityAction() {
         if (devToolsOpen) return;
         devToolsOpen = true;
 
+        // 콘솔 에러 출력
         console.error(
             "%c불법 복제는 당신을 감옥으로 이끕니다.",
             "color: red; font-size: 30px; font-weight: bold; background-color: black; padding: 10px;"
         );
-
-        if (!overlayElement) createOverlay();
-        if (overlayElement) overlayElement.style.display = 'flex';
     }
 
-    // 3. 보안 조치 해제 (개발자 도구 닫힘)
+    // 2. 개발자 도구 닫힘 상태 복구
     function restoreNormalState() {
         if (!devToolsOpen) return;
         devToolsOpen = false;
-
-        if (overlayElement) {
-            overlayElement.style.display = 'none';
-        }
     }
 
-    // 4. 시간차 기반 개발자 도구 열림/닫힘 감지
+    // 3. 시간차 기반 개발자 도구 열림/닫힘 감지
     function checkDevTools() {
         const startTime = Date.now();
         debugger; 
         const endTime = Date.now();
 
-        // 디버거에서 걸린 시간이 100ms 초과면 개발자 도구가 열려있는 상태
+        // 디버거 동작 시 걸린 시간이 100ms 초과면 개발자 도구가 열려있는 상태
         if (endTime - startTime > 100) {
             triggerSecurityAction();
         } else {
@@ -66,7 +33,7 @@
         }
     }
 
-    // 5. 키보드 단축키 차단 로직
+    // 4. 키보드 단축키 차단 로직 (F12, Ctrl+Shift+I/J, Ctrl+U)
     window.addEventListener('keydown', function(event) {
         const isCtrl = event.ctrlKey || event.metaKey;
         const isShift = event.shiftKey;
@@ -82,12 +49,6 @@
         }
     });
 
-    // 문서 로드 완료 후 오버레이 생성 및 주기적 체크 시작
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', createOverlay);
-    } else {
-        createOverlay();
-    }
-
+    // 주기적으로 디버거 및 개발자 도구 상태 체크 (0.5초 간격)
     setInterval(checkDevTools, 500);
 })();
