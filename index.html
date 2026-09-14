@@ -116,7 +116,7 @@
 
         <!-- 프로그레스 바 배경 -->
         <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-            <!-- 프로그레스 게이지 (JS로 width 조절) -->
+            <!-- 프로그레스 게이지 -->
             <div id="progress-bar" class="h-full bg-indigo-600 rounded-full transition-all duration-150 ease-out" style="width: 0%;"></div>
         </div>
     </div>
@@ -128,19 +128,25 @@
         const progressBar = document.getElementById('progress-bar');
         const progressText = document.getElementById('progress-text');
         const loadingOverlay = document.getElementById('loading-overlay');
+        
+        let isCompleted = false;
 
         // 진행률 업데이트 함수
         window.updateLoadingProgress = function(percent) {
+            if (isCompleted) return;
+
             const currentPercent = Math.min(Math.max(percent, 0), 100);
+            
             if (progressBar && progressText) {
                 progressBar.style.width = currentPercent + '%';
                 progressText.innerText = Math.floor(currentPercent) + '%';
             }
-            // 100% 완료 시 페이드아웃 후 제거
-            if (currentPercent >= 100 && loadingOverlay) {
+
+            // 정확히 100%에 도달한 경우에만 닫기
+            if (currentPercent >= 100) {
+                isCompleted = true;
                 setTimeout(() => {
                     loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
-                    // 페이드아웃 애니메이션 완료 후 dom에서 완전 숨김 처리
                     setTimeout(() => {
                         loadingOverlay.style.display = 'none';
                     }, 500);
@@ -148,16 +154,18 @@
             }
         };
 
-        // 시뮬레이션 예시 (실제 자산/리소스 로딩 시에는 window.updateLoadingProgress(수치) 호출)
+        // 안전한 시뮬레이션 동작 (0% ~ 100% 차례대로 증가)
         let progress = 0;
         const interval = setInterval(() => {
-            progress += Math.floor(Math.random() * 8) + 3; // 무작위 속도로 로딩 진행
+            progress += Math.floor(Math.random() * 6) + 4; // 4~9%씩 증가
+            
             if (progress >= 100) {
                 progress = 100;
                 clearInterval(interval);
             }
+            
             window.updateLoadingProgress(progress);
-        }, 120);
+        }, 80);
     })();
 </script>
 
