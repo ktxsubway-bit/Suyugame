@@ -155,41 +155,69 @@
             }
         };
 
-        // --- 실제 로딩 속도 감지 로직 ---
+        // --- 캐시 파괴(Cache Busting) 및 실제 로딩 강제 로직 ---
         
-        // 페이지 내의 모든 이미지 요소 가져오기
         const images = document.images;
-        const totalResources = images.length || 1; // 이미지가 없으면 최소 1로 설정
+        const totalResources = images.length || 1;
         let loadedResources = 0;
+        
+        let targetPercent = 0; 
+        let displayPercent = 0; 
 
         function resourceLoaded() {
             loadedResources++;
-            // 로딩된 리소스 비율 계산 (최대 95%까지만 올리고, 최종 완료는 window.load에서 처리)
-            const calculatedPercent = (loadedResources / totalResources) * 95;
-            window.updateLoadingProgress(calculatedPercent);
+            targetPercent = (loadedResources / totalResources) * 95;
         }
 
         if (images.length === 0) {
-            // 추적할 이미지가 없다면 50%까지 즉시 올림
-            window.updateLoadingProgress(50);
+            targetPercent = 95;
         } else {
-            // 각 이미지의 로딩 상태 체크
+            // 현재 시간을 기반으로 고유한 토큰 생성 (캐시 파괴용)
+            const cacheBuster = 'cache_stop=' + new Date().getTime();
+
             for (let i = 0; i < images.length; i++) {
-                if (images[i].complete) {
-                    resourceLoaded();
+                const img = images[i];
+                
+                // 기존 이미지 주소 추출
+                let originalSrc = img.src || img.getAttribute('src');
+                
+                if (originalSrc && !originalSrc.startsWith('data:')) {
+                    // 데이터 URL(base64)이 아닌 일반 이미지 경로에 쿼리 스트링 추가
+                    const separator = originalSrc.includes('?') ? '&' : '?';
+                    
+                    // 이벤트 리스너를 먼저 등록한 뒤 src를 변경해야 유실 없이 감지됩니다.
+                    img.addEventListener('load', resourceLoaded);
+                    img.addEventListener('error', resourceLoaded); // 에러 발생 시에도 게이지 진행
+
+                    // 새로운 URL 할당 -> 브라우저가 캐시를 무시하고 새로 다운로드 시작
+                    img.src = originalSrc + separator + cacheBuster;
                 } else {
-                    images[i].addEventListener('load', resourceLoaded);
-                    images[i].addEventListener('error', resourceLoaded); // 에러가 나도 진행되도록 처리
+                    // 주소가 없거나 base64 데이터인 경우 즉시 로드 처리
+                    resourceLoaded();
                 }
             }
         }
 
-        // HTML, CSS, 이미지 등 모든 리소스 다운로드가 완벽히 끝났을 때 100% 채우기
+        // 전체 페이지 완결 리스너
         window.addEventListener('load', function() {
-            window.updateLoadingProgress(100);
+            targetPercent = 100;
         });
+
+        // 애니메이션 루프 (0%부터 부드럽게 타겟을 추적)
+        const animationInterval = setInterval(() => {
+            if (displayPercent < targetPercent) {
+                // 초당 약 60번, 매 프레임 최대 3%씩 부드럽게 증가
+                displayPercent += Math.min(3, targetPercent - displayPercent);
+                window.updateLoadingProgress(displayPercent);
+            }
+
+            if (displayPercent >= 100) {
+                clearInterval(animationInterval);
+            }
+        }, 16);
     })();
 </script>
+
 
 
     <!-- 메인 메뉴 화면 -->
