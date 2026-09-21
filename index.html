@@ -94,33 +94,34 @@
 
     <!-- 로딩 화면 -->
 <div id="loading-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white transition-opacity duration-500">
-    <!-- 우측 상단 등급 마크 모음 -->
-    <div class="absolute top-4 right-4 flex items-center gap-2">
-        <!-- 12세 이용가 마크 -->
-        <div class="w-12 md:w-16">
-            <img src="12plus.png" alt="12세 이용가" class="w-full h-auto drop-shadow-sm">
-        </div>
-        <!-- 폭력성 마크 -->
-        <div class="w-12 md:w-16">
-            <img src="violent-nature.png" alt="폭력성" class="w-full h-auto drop-shadow-sm">
-        </div>
+  <!-- 우측 상단 등급 마크 모음 (주석 처리됨)
+  <div class="absolute top-4 right-4 flex items-center gap-2">
+    <!- 12세 이용가 마크 ->
+    <div class="w-12 md:w-16">
+      <img src="12plus.png" alt="12세 이용가" class="w-full h-auto drop-shadow-sm">
     </div>
-
-    <!-- 중앙 로딩 프로그레스 바 및 텍스트 컨테이너 -->
-    <div class="w-64 md:w-80 flex flex-col items-center">
-        <!-- 텍스트 & 퍼센트 표시 -->
-        <div class="w-full flex justify-between items-center mb-2">
-            <span class="text-slate-600 font-medium text-sm">NOW LOADING...</span>
-            <span id="progress-text" class="text-indigo-600 font-bold text-sm">0%</span>
-        </div>
-
-        <!-- 프로그레스 바 배경 -->
-        <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-            <!-- 프로그레스 게이지 -->
-            <div id="progress-bar" class="h-full bg-indigo-600 rounded-full transition-all duration-150 ease-out" style="width: 0%;"></div>
-        </div>
+    <!- 폭력성 마크 ->
+    <div class="w-12 md:w-16">
+      <img src="violent-nature.png" alt="폭력성" class="w-full h-auto drop-shadow-sm">
     </div>
+  </div>
+  -->
+
+  <!-- 중앙 로딩 프로그레스 바 및 텍스트 컨테이너 -->
+  <div class="w-64 md:w-80 flex flex-col items-center">
+    <!-- 텍스트 & 퍼센트 표시 -->
+    <div class="w-full flex justify-between items-center mb-2">
+      <span class="text-slate-600 font-medium text-sm">NOW LOADING...</span>
+      <span id="progress-text" class="text-indigo-600 font-bold text-sm">0%</span>
+    </div>
+    <!-- 프로그레스 바 배경 -->
+    <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
+      <!-- 프로그레스 게이지 -->
+      <div id="progress-bar" class="h-full bg-indigo-600 rounded-full transition-all duration-150 ease-out" style="width: 0%;"></div>
+    </div>
+  </div>
 </div>
+
 
 <!-- 로딩 제어 스크립트 -->
 <script>
@@ -131,7 +132,7 @@
         
         let isCompleted = false;
 
-        // 진행률 업데이트 함수
+        // 진행률 업데이트 및 종료 처리 함수
         window.updateLoadingProgress = function(percent) {
             if (isCompleted) return;
 
@@ -142,7 +143,7 @@
                 progressText.innerText = Math.floor(currentPercent) + '%';
             }
 
-            // 정확히 100%에 도달한 경우에만 닫기
+            // 정확히 100%에 도달한 경우에만 로딩창 닫기
             if (currentPercent >= 100) {
                 isCompleted = true;
                 setTimeout(() => {
@@ -154,20 +155,42 @@
             }
         };
 
-        // 안전한 시뮬레이션 동작 (0% ~ 100% 차례대로 증가)
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.floor(Math.random() * 6) + 4; // 4~9%씩 증가
-            
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(interval);
+        // --- 실제 로딩 속도 감지 로직 ---
+        
+        // 페이지 내의 모든 이미지 요소 가져오기
+        const images = document.images;
+        const totalResources = images.length || 1; // 이미지가 없으면 최소 1로 설정
+        let loadedResources = 0;
+
+        function resourceLoaded() {
+            loadedResources++;
+            // 로딩된 리소스 비율 계산 (최대 95%까지만 올리고, 최종 완료는 window.load에서 처리)
+            const calculatedPercent = (loadedResources / totalResources) * 95;
+            window.updateLoadingProgress(calculatedPercent);
+        }
+
+        if (images.length === 0) {
+            // 추적할 이미지가 없다면 50%까지 즉시 올림
+            window.updateLoadingProgress(50);
+        } else {
+            // 각 이미지의 로딩 상태 체크
+            for (let i = 0; i < images.length; i++) {
+                if (images[i].complete) {
+                    resourceLoaded();
+                } else {
+                    images[i].addEventListener('load', resourceLoaded);
+                    images[i].addEventListener('error', resourceLoaded); // 에러가 나도 진행되도록 처리
+                }
             }
-            
-            window.updateLoadingProgress(progress);
-        }, 80);
+        }
+
+        // HTML, CSS, 이미지 등 모든 리소스 다운로드가 완벽히 끝났을 때 100% 채우기
+        window.addEventListener('load', function() {
+            window.updateLoadingProgress(100);
+        });
     })();
 </script>
+
 
     <!-- 메인 메뉴 화면 -->
     <div id="menu-screen" class="max-w-4xl mx-auto min-h-screen px-6 py-12 w-full hidden">
