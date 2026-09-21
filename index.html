@@ -147,12 +147,13 @@
             if (isCompleted) return;
             isCompleted = true;
 
+            // [핵심 수정] 100% 달성 후 0.5초(500ms) 동안 대기했다가 페이드아웃 시작
             setTimeout(() => {
                 loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
                 setTimeout(() => {
                     loadingOverlay.style.display = 'none';
-                }, 500);
-            }, 300);
+                }, 500); // 페이드아웃 애니메이션 시간 (0.5초)
+            }, 500); // 100%에서 멈춰있을 대기 시간 (0.5초)
         }
 
         // --- 캐시 파괴 및 실제 로딩 감지 로직 ---
@@ -165,11 +166,11 @@
 
         function resourceLoaded() {
             loadedResources++;
-            targetPercent = (loadedResources / totalResources) * 95;
+            targetPercent = (loadedResources / totalResources) * 100;
         }
 
         if (images.length === 0) {
-            targetPercent = 95;
+            targetPercent = 100;
         } else {
             const cacheBuster = 'cache_stop=' + new Date().getTime();
 
@@ -190,7 +191,6 @@
             }
         }
 
-        // 전체 리소스가 다 로드되면 목표치를 100으로 설정
         window.addEventListener('load', function() {
             targetPercent = 100;
         });
@@ -198,12 +198,12 @@
         // 애니메이션 루프 (눈에 보이는 게이지 제어)
         const animationInterval = setInterval(() => {
             if (displayPercent < targetPercent) {
-                // 매 프레임 최대 3%씩 증가 (속도를 높이려면 3을 더 큰 숫자로 수정 가능)
+                // 매 프레임 최대 3%씩 증가
                 displayPercent += Math.min(3, targetPercent - displayPercent);
                 window.updateLoadingProgress(displayPercent);
             }
 
-            // [핵심 수정] 눈에 보이는 숫자가 확실하게 100 이상이 되었을 때만 종료
+            // 눈에 보이는 숫자가 완벽하게 100에 도달했을 때 루프를 깨고 0.5초 대기 타이머 진입
             if (displayPercent >= 100) {
                 clearInterval(animationInterval);
                 closeLoadingOverlay();
@@ -211,6 +211,7 @@
         }, 16);
     })();
 </script>
+
 
 
 
