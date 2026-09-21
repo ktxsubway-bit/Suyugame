@@ -132,31 +132,30 @@
         
         let isCompleted = false;
 
-        // 진행률 업데이트 및 종료 처리 함수
+        // 단순히 화면 UI(게이지 바, 텍스트)만 변경하는 함수
         window.updateLoadingProgress = function(percent) {
-            if (isCompleted) return;
-
             const currentPercent = Math.min(Math.max(percent, 0), 100);
             
             if (progressBar && progressText) {
                 progressBar.style.width = currentPercent + '%';
                 progressText.innerText = Math.floor(currentPercent) + '%';
             }
-
-            // 정확히 100%에 도달한 경우에만 로딩창 닫기
-            if (currentPercent >= 100) {
-                isCompleted = true;
-                setTimeout(() => {
-                    loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
-                    setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                    }, 500);
-                }, 300);
-            }
         };
 
-        // --- 캐시 파괴(Cache Busting) 및 실제 로딩 강제 로직 ---
-        
+        // 로딩 화면을 부드럽게 닫는 독립 함수
+        function closeLoadingOverlay() {
+            if (isCompleted) return;
+            isCompleted = true;
+
+            setTimeout(() => {
+                loadingOverlay.classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            }, 300);
+        }
+
+        // --- 캐시 파괴 및 실제 로딩 감지 로직 ---
         const images = document.images;
         const totalResources = images.length || 1;
         let loadedResources = 0;
@@ -172,51 +171,47 @@
         if (images.length === 0) {
             targetPercent = 95;
         } else {
-            // 현재 시간을 기반으로 고유한 토큰 생성 (캐시 파괴용)
             const cacheBuster = 'cache_stop=' + new Date().getTime();
 
             for (let i = 0; i < images.length; i++) {
                 const img = images[i];
-                
-                // 기존 이미지 주소 추출
                 let originalSrc = img.src || img.getAttribute('src');
                 
                 if (originalSrc && !originalSrc.startsWith('data:')) {
-                    // 데이터 URL(base64)이 아닌 일반 이미지 경로에 쿼리 스트링 추가
                     const separator = originalSrc.includes('?') ? '&' : '?';
                     
-                    // 이벤트 리스너를 먼저 등록한 뒤 src를 변경해야 유실 없이 감지됩니다.
                     img.addEventListener('load', resourceLoaded);
-                    img.addEventListener('error', resourceLoaded); // 에러 발생 시에도 게이지 진행
+                    img.addEventListener('error', resourceLoaded);
 
-                    // 새로운 URL 할당 -> 브라우저가 캐시를 무시하고 새로 다운로드 시작
                     img.src = originalSrc + separator + cacheBuster;
                 } else {
-                    // 주소가 없거나 base64 데이터인 경우 즉시 로드 처리
                     resourceLoaded();
                 }
             }
         }
 
-        // 전체 페이지 완결 리스너
+        // 전체 리소스가 다 로드되면 목표치를 100으로 설정
         window.addEventListener('load', function() {
             targetPercent = 100;
         });
 
-        // 애니메이션 루프 (0%부터 부드럽게 타겟을 추적)
+        // 애니메이션 루프 (눈에 보이는 게이지 제어)
         const animationInterval = setInterval(() => {
             if (displayPercent < targetPercent) {
-                // 초당 약 60번, 매 프레임 최대 3%씩 부드럽게 증가
+                // 매 프레임 최대 3%씩 증가 (속도를 높이려면 3을 더 큰 숫자로 수정 가능)
                 displayPercent += Math.min(3, targetPercent - displayPercent);
                 window.updateLoadingProgress(displayPercent);
             }
 
+            // [핵심 수정] 눈에 보이는 숫자가 확실하게 100 이상이 되었을 때만 종료
             if (displayPercent >= 100) {
                 clearInterval(animationInterval);
+                closeLoadingOverlay();
             }
         }, 16);
     })();
 </script>
+
 
 
 
