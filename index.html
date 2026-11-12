@@ -3634,6 +3634,19 @@ const mountExit = (exitContainer) => {
         </div>
     `;
 };
+
+const mountFighter2 = (fighter2Container) => {
+    fighter2Container.innerHTML = `
+        <div class="relative w-full h-[calc(100vh-100px)] rounded-2xl overflow-hidden border-4 border-slate-700 bg-black shadow-2xl">
+            <iframe 
+                src="https://pxfighter.ddns.net" 
+                class="absolute inset-0 w-full h-full border-0" 
+                allow="autoplay; gamepad; fullscreen" 
+                loading="lazy">
+            </iframe>
+        </div>
+    `;
+};         
         
 const mountBaseballgame = (baseballgameContainer) => {
     // 대문자 C로 정확하게 일치시킴!
@@ -3749,6 +3762,7 @@ const mountW3D = (w3dContainer) => {
   { id: 'mineFunContainer', title: 'MINECRAT!', icon: 'box', color: 'bg-lime-100 text-lime-700', mount: mountMineFun },
   { id: 'miContainer', title: 'MINEFUN IO', icon: 'boxes', color: 'bg-teal-100 text-teal-700', mount: mountMicefunioioio },
   { id: 'fighterContainer', title: 'Pixel Fighter', icon: 'swords', color: 'bg-indigo-100 text-indigo-600', mount: mountFighter },
+  { id: 'fighter2Container', title: 'Pixel Fighter2', icon: 'swords', color: 'bg-pink-100 text-pink-600', mount: mountFighter2 },
   { id: 'ricejump3Container', title: 'RiceJump', icon: 'castle', color: 'bg-rose-100 text-rose-700', mount: mountRicejump3 },
 
   // 3. 숫자 (오름차순)
