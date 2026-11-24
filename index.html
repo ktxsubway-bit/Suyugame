@@ -85,27 +85,54 @@
       height: calc(100vh - 70px);
     }
 
-    /* One UI 톤 (메뉴 카드 중심, 레이아웃 변경 없음) */
-    :root { --oneui-primary: #0A6CFF; }
-    body { background-color: #F2F3F7 !important; }
-    #games-grid > button {
-      border: none !important;
-      border-radius: 28px !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    /* ===== One UI 9 · 다크 리스트 스타일 ===== */
+    :root {
+      --o9-bg: #0E0F13;
+      --o9-card: #1C1E26;
+      --o9-line: rgba(255,255,255,0.07);
+      --o9-accent: #8AB4FF;
+      --o9-text: #F3F4F8;
+      --o9-sub: #9AA0AE;
     }
-    #games-grid > button:hover {
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
+    body { background: var(--o9-bg) !important; color: var(--o9-text) !important; }
+
+    /* 로딩 화면 */
+    #loading-overlay { background: var(--o9-bg) !important; }
+    #loading-overlay .text-slate-600 { color: var(--o9-sub) !important; }
+    #loading-overlay .text-indigo-600 { color: var(--o9-accent) !important; }
+    #loading-overlay .bg-slate-100 { background: var(--o9-card) !important; }
+    #loading-overlay #progress-bar { background: var(--o9-accent) !important; }
+
+    /* 메뉴: 섹션 라벨 + 둥근 패널 + 행 */
+    #menu-screen footer p { color: var(--o9-sub) !important; }
+    #games-grid .o9-label { color: var(--o9-accent); }
+    #games-grid .o9-panel {
+      background: var(--o9-card);
+      border-radius: 32px;
+      overflow: hidden;
     }
-    #games-grid > button > div:first-child {
-      border-radius: 22px !important;
+    #games-grid .o9-row { color: var(--o9-text); }
+    #games-grid .o9-row + .o9-row { border-top: 1px solid var(--o9-line); }
+    #games-grid .o9-row:hover { background: rgba(255,255,255,0.04); }
+    #games-grid .o9-row:active { background: rgba(255,255,255,0.09); }
+    #games-grid .o9-row i[data-lucide="chevron-right"] { color: var(--o9-sub); }
+
+    /* 게임 화면: 투명 상단바 + 둥근 게임 영역 */
+    #game-screen { background: var(--o9-bg) !important; }
+    #game-screen > header { background: transparent !important; border: none !important; }
+    #game-screen > header button {
+      color: var(--o9-text) !important;
+      background: var(--o9-card);
+      border-radius: 999px !important;
+      padding: 10px 16px !important;
     }
-    #menu-screen .bg-indigo-100 {
-      background-color: #E6F0FF !important;
-      border-left-color: var(--oneui-primary) !important;
-      border-radius: 20px !important;
-    }
-    #game-screen > header {
-      border-bottom: 1px solid #ECEEF3 !important;
+    #game-header-title { color: var(--o9-text) !important; }
+    #game-container {
+      margin: 0 12px 12px;
+      height: calc(100vh - 96px);
+      border-radius: 32px;
+      background: #F4F5F9 !important;
+      overflow: hidden;
     }
   </style>
 
@@ -241,21 +268,19 @@
 
     <!-- 메인 메뉴 화면 -->
     <div id="menu-screen" class="max-w-4xl mx-auto min-h-screen px-6 py-12 w-full hidden">
-        <header class="mb-8 text-center">
-            <h1 class="text-5xl font-black text-indigo-600 mb-2 tracking-tighter flex justify-center items-center gap-3">
-                <i data-lucide="gamepad-2" class="w-12 h-12 text-indigo-500"></i>
-                SUYUGAME
-            </h1>
-            <p class="text-slate-500 font-medium text-lg">다양한 게임을 즐겨보세요</p>
+        <header class="mb-10 px-2">
+            <p class="text-sm font-bold tracking-[0.2em] text-sky-300 mb-2">SUYUGAME</p>
+            <h1 class="text-[44px] leading-none font-black text-white tracking-tight">게임 모음</h1>
+            <p class="text-slate-400 mt-3 text-base font-medium">다양한 게임을 즐겨보세요</p>
         </header>
 
         <!-- 공지사항 배너 -->
         <div class="max-w-4xl mx-auto mb-10">
-            <div class="bg-indigo-100 border-l-4 border-indigo-500 p-4 rounded-r-2xl flex justify-between items-center shadow-sm">
+            <div class="bg-[#1C1E26] p-4 rounded-[28px] flex justify-between items-center">
                 <div class="flex items-center w-full overflow-hidden">
-                    <i data-lucide="megaphone" class="w-6 h-6 text-indigo-600 mr-3 shrink-0"></i>
+                    <i data-lucide="megaphone" class="w-6 h-6 text-sky-300 mr-3 shrink-0"></i>
                     <div id="notice-container" class="flex-1 overflow-hidden whitespace-nowrap relative flex items-center">
-                        <span id="notice-text" class="text-indigo-900 font-bold text-lg inline-block">하시</span>
+                        <span id="notice-text" class="text-white font-semibold text-base inline-block">하시</span>
                     </div>
                 </div>
                 <button id="admin-edit-btn" onclick="openAdminEdit()" class="hidden ml-4 shrink-0 bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 transition shadow-md whitespace-nowrap">공지 수정</button>
@@ -272,8 +297,8 @@
     </div>
 
     <!-- 게임 실행 화면 -->
-    <div id="game-screen" class="hidden fixed inset-0 bg-white z-40 flex flex-col">
-        <header class="relative flex items-center justify-between px-6 h-[70px] border-b shrink-0 bg-white">
+    <div id="game-screen" class="hidden fixed inset-0 bg-[#0E0F13] z-40 flex flex-col">
+        <header class="relative flex items-center justify-between px-4 h-[72px] shrink-0 text-white">
     <!-- 1. 왼쪽 버튼 -->
     <button onclick="closeGame()" class="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center text-slate-600 font-bold z-10">
         <i data-lucide="arrow-left" class="w-6 h-6 mr-1"></i>
@@ -281,7 +306,7 @@
     </button>
     
     <!-- 2. 중앙 제목 (absolute 및 translate 처리) -->
-    <h2 id="game-header-title" class="absolute left-1/2 -translate-x-1/2 text-xl font-black flex items-center text-slate-800 pointer-events-none"></h2>
+    <h2 id="game-header-title" class="absolute left-1/2 -translate-x-1/2 text-lg font-bold flex items-center text-white pointer-events-none"></h2>
     
     <!-- 3. 오른쪽 버튼 -->
     <button onclick="window.toggleFullScreen()" class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600 flex items-center justify-center z-10">
@@ -4080,17 +4105,26 @@ const mountMinesweeper = (c) => {
         // 게임 메뉴 렌더링
         const gridContainer = document.getElementById('games-grid');
         if (gridContainer) {
+            gridContainer.className = 'flex flex-col gap-10';
+            const groupLabel = (t) => /[가-힣]/.test(t[0]) ? '가나다' : /[A-Za-z]/.test(t[0]) ? 'ABC' : '123';
+            let currentGroup = null, panel = null;
             GAMES.forEach(game => {
+                const g = groupLabel(game.title);
+                if (g !== currentGroup) {
+                    currentGroup = g;
+                    const wrap = document.createElement('section');
+                    wrap.innerHTML = `<h2 class="o9-label px-3 mb-3 text-sm font-bold tracking-[0.2em]">${g}</h2><div class="o9-panel"></div>`;
+                    gridContainer.appendChild(wrap);
+                    panel = wrap.querySelector('.o9-panel');
+                }
                 const btn = document.createElement('button');
-                btn.className = "bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center justify-center transition-all hover:shadow-xl hover:-translate-y-1 group active:scale-95";
+                btn.className = 'o9-row w-full flex items-center gap-4 px-5 py-4 text-left transition-colors';
                 btn.onclick = () => window.openGame(game.id);
                 btn.innerHTML = `
-                    <div class="p-4 rounded-2xl mb-4 ${game.color} group-hover:scale-110 transition-transform">
-                        <i data-lucide="${game.icon}" class="w-9 h-9"></i>
-                    </div>
-                    <h3 class="font-bold text-slate-800 text-lg">${game.title}</h3>
-                `;
-                gridContainer.appendChild(btn);
+                    <span class="w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center ${game.color}"><i data-lucide="${game.icon}" class="w-6 h-6"></i></span>
+                    <span class="flex-1 font-semibold text-[17px]">${game.title}</span>
+                    <i data-lucide="chevron-right" class="w-5 h-5 opacity-40"></i>`;
+                panel.appendChild(btn);
             });
             lucide.createIcons();
         }
