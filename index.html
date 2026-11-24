@@ -2547,25 +2547,29 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
                 // 시작 플랫폼
                 addPlatform(0, 0, 0, 10, 1, 10, 0x94a3b8);
 
-                // 징검다리 생성
-                let curX = 0, curY = 0, curZ = -6;
-                const count = 8 + lvl * 3;
-                for(let i=0; i<count; i++) {
-                    curX += (Math.random() - 0.5) * 8;
-                    curY += Math.random() * 2 + 0.2; // 조금씩 올라감
-                    curZ -= Math.random() * 4 + 4;   // 앞으로 나아감
-
-                    // 레벨이 오를수록 발판 크기 감소
-                    const w = Math.max(1.5, 4 - lvl * 0.2);
-                    const d = Math.max(1.5, 4 - lvl * 0.2);
-                   
-                    addPlatform(curX, curY, curZ, w, 1, d, 0x4ade80);
+                // 징검다리 생성 (점프로 도달 가능한 간격만 생성)
+                // 점프 최대 수평거리 약 4.5, 최고 높이 약 3.6 기준
+                let prevHalf = 5;               // 시작 발판 반지름 (10x10)
+                let curX = 0, curY = 0, curZ = 0;
+                const count = 8 + lvl * 2;
+                const size = Math.max(2.2, 4 - lvl * 0.15);
+                for (let i = 0; i < count; i++) {
+                    const half = size / 2;
+                    const gap = 1 + Math.random() * 1.5;            // 발판 사이 빈 칸 1~2.5
+                    curZ -= prevHalf + half + gap;
+                    curX += (Math.random() - 0.5) * 2.4;            // 좌우 흔들림 최대 ±1.2
+                    curX = Math.max(-4, Math.min(4, curX));
+                    curY += (Math.random() - 0.35) * 1.0;           // 완만한 오르막/내리막
+                    curY = Math.max(-1, Math.min(5, curY));
+                    addPlatform(curX, curY, curZ, size, 1, size, 0x4ade80);
+                    prevHalf = half;
                 }
 
-                // 도착 지점 (노란색)
-                curY += 2;
-                curZ -= 6;
-                goal = addPlatform(curX, curY, curZ, 8, 1, 8, 0xfacc15, true);
+                // 도착 지점 (노란색): 마지막 발판과 같은 간격 규칙 적용
+                const goalSize = 5;
+                curZ -= prevHalf + goalSize / 2 + 1.8;
+                curY += 0.5;
+                goal = addPlatform(curX, curY, curZ, goalSize, 1, goalSize, 0xfacc15, true);
 
                 // 플레이어 초기화
                 safe = { x: 0, y: 0.5, z: 0 };
