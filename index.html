@@ -2344,37 +2344,43 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
         const mount3DJumpMap = (container) => {
             // UI 초기화
             container.innerHTML = `
-                <div id="jump3d-container" class="absolute inset-0 bg-slate-900 overflow-hidden touch-none select-none">
+                <div id="jump3d-container" class="absolute inset-0 bg-[#0E0F13] overflow-hidden touch-none select-none rounded-[32px]">
                     <div id="jump3d-canvas" class="absolute inset-0"></div>
-                    <!-- 크로스헤어 -->
+
+                    <!-- 조준점 -->
                     <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                        <div class="w-1 h-4 bg-white/60 rounded-full absolute"></div>
-                        <div class="w-4 h-1 bg-white/60 rounded-full absolute"></div>
+                        <div class="w-px h-5 bg-slate-800/70 rounded-full absolute"></div>
+                        <div class="w-5 h-px bg-slate-800/70 rounded-full absolute"></div>
                     </div>
-                    <!-- 상태 UI -->
-                    <div class="absolute top-4 left-4 text-white font-bold text-xl drop-shadow-md z-10 pointer-events-none">
-                        단계: <span id="jump3d-level" class="text-emerald-400">1</span>
-                    </div>
-                    <div id="jump3d-msg" class="absolute inset-0 flex items-center justify-center text-5xl font-black text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)] z-10 pointer-events-none hidden">
-                        CLEAR!
-                    </div>
-                    <!-- 시작 화면 / 마우스 잠금 유도 -->
-                    <div id="jump3d-start-overlay" class="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center z-20 text-white backdrop-blur-md cursor-pointer pointer-events-auto">
-                        <p class="text-4xl font-black mb-4 text-emerald-400 drop-shadow-lg">3D 점프맵</p>
-                        <p class="mb-2 text-slate-300 font-medium">PC: 화면을 클릭하여 마우스 잠금 (조작: WASD + 스페이스바)</p>
-                        <p class="mb-8 text-slate-300 font-medium hidden md:block">모바일: 화면이 작아 PC 환경을 권장합니다.</p>
-                        <p class="mb-8 text-slate-300 font-medium md:hidden">모바일: 좌측 조이스틱 + 우측 화면 드래그 + 점프 버튼</p>
-                        <button id="jump3d-start-btn" class="bg-emerald-600 hover:bg-emerald-700 px-10 py-4 rounded-full font-bold text-xl transition-colors shadow-xl">게임 시작</button>
-                    </div>
-                    <!-- 모바일 컨트롤 (터치 기기에서만 활성화) -->
-                    <div id="jump3d-mobile-controls" class="absolute inset-0 pointer-events-none z-10 hidden">
-                        <!-- 조이스틱 영역 -->
-                        <div id="jump3d-joy-zone" class="absolute bottom-8 left-8 w-32 h-32 bg-white/10 rounded-full pointer-events-auto border-2 border-white/20 flex items-center justify-center backdrop-blur-sm">
-                            <div id="jump3d-joy-knob" class="w-12 h-12 bg-white/40 rounded-full shadow-lg transition-transform duration-75"></div>
+
+                    <!-- 단계 표시 (알약 칩) -->
+                    <div class="absolute top-5 left-5 z-10 pointer-events-none">
+                        <div class="px-4 py-2 rounded-full bg-white/75 backdrop-blur-md shadow-md text-slate-800 font-semibold text-sm">
+                            단계 <span id="jump3d-level" class="text-[#2F6BFF] font-black">1</span>
                         </div>
-                        <!-- 점프 버튼 -->
-                        <div id="jump3d-jump-btn" class="absolute bottom-8 right-8 w-24 h-24 bg-white/10 rounded-full border-2 border-white/20 flex items-center justify-center pointer-events-auto active:bg-white/30 backdrop-blur-sm shadow-lg">
-                            <span class="text-white font-black text-lg">JUMP</span>
+                    </div>
+
+                    <!-- 클리어 메시지 -->
+                    <div id="jump3d-msg" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none hidden">
+                        <div class="px-8 py-4 rounded-[28px] bg-white/80 backdrop-blur-md shadow-xl text-[#2F6BFF] text-4xl font-black tracking-tight">CLEAR!</div>
+                    </div>
+
+                    <!-- 시작 화면 -->
+                    <div id="jump3d-start-overlay" class="absolute inset-0 z-20 bg-white/70 backdrop-blur-xl flex flex-col items-center justify-center text-slate-900 px-6 text-center cursor-pointer pointer-events-auto">
+                        <p class="text-xs font-bold tracking-[0.25em] text-[#2F6BFF] mb-3">SUYUGAME · 3D</p>
+                        <p class="text-5xl font-black tracking-tight mb-5">3D 점프맵</p>
+                        <p class="text-slate-500 font-medium mb-1">PC: 화면을 클릭해 마우스 잠금 · WASD + 스페이스</p>
+                        <p class="text-slate-500 font-medium mb-8 md:hidden">모바일: 왼쪽 조이스틱 · 오른쪽 드래그 · JUMP</p>
+                        <button id="jump3d-start-btn" class="px-10 py-4 rounded-full bg-[#2F6BFF] text-white font-bold text-lg shadow-xl active:scale-95 transition">게임 시작</button>
+                    </div>
+
+                    <!-- 모바일 컨트롤 -->
+                    <div id="jump3d-mobile-controls" class="absolute inset-0 pointer-events-none z-10 hidden">
+                        <div id="jump3d-joy-zone" class="absolute bottom-8 left-6 w-36 h-36 rounded-full bg-white/50 backdrop-blur-md shadow-lg border border-white/80 flex items-center justify-center pointer-events-auto">
+                            <div id="jump3d-joy-knob" class="w-14 h-14 rounded-full bg-[#2F6BFF]/80 shadow-lg transition-transform duration-75"></div>
+                        </div>
+                        <div id="jump3d-jump-btn" class="absolute bottom-8 right-6 w-28 h-28 rounded-full bg-[#2F6BFF] shadow-xl border-4 border-white/70 flex items-center justify-center pointer-events-auto active:scale-95 transition">
+                            <span class="text-white font-black text-base tracking-wide">JUMP</span>
                         </div>
                     </div>
                 </div>
@@ -2388,7 +2394,7 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
             canvasContainer.appendChild(cv);
             const ctx = cv.getContext('2d');
             let W = 0, H = 0, dpr = 1;
-            const SKY_TOP = [135, 206, 235], SKY_BOT = [200, 235, 250], FOG_RGB = [190, 225, 245];
+            const SKY_TOP = [135, 206, 235], SKY_BOT = [214, 240, 252], FOG_RGB = [200, 232, 248];
             const FOV = 75 * Math.PI / 180;
             const NEAR = 0.1, FAR = 90;
             const LIGHT = (() => { const l = [0.4, 1, 0.3]; const m = Math.hypot(...l); return l.map(v => v / m); })();
@@ -2457,6 +2463,7 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
                 const f = (H / 2) / Math.tan(FOV / 2);
                 const faces = [];
                 for (const plat of platforms) {
+                    const gd = toCam(plat.x, plat.y, plat.z)[2];
                     for (const [n, corners] of boxFaces(plat)) {
                         const fc = corners.reduce((acc, c) => [acc[0] + c[0] / 4, acc[1] + c[1] / 4, acc[2] + c[2] / 4], [0, 0, 0]);
                         const toEye = [camState.x - fc[0], camState.y - fc[1], camState.z - fc[2]];
@@ -2468,29 +2475,41 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
                         if (avgD > FAR) continue;
 
                         const ndl = Math.max(0, n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]);
-                        const shade = 0.55 + 0.45 * ndl;
+                        const shade = 0.55 + 0.45 * ndl + (n[1] > 0 ? 0.08 : 0);
                         let rgb = plat.rgb.map(v => v * shade);
-                        if (plat.isGoal) rgb = rgb.map((v, i) => Math.min(255, v + [60, 50, 0][i]));
+                        if (plat.isGoal) rgb = rgb.map((v, i) => Math.min(255, v + [40, 36, 0][i]));
                         const fog = Math.min(1, Math.max(0, (avgD - 25) / (FAR - 25))) * 0.9;
                         rgb = rgb.map((v, i) => v * (1 - fog) + FOG_RGB[i] * fog);
 
                         faces.push({
+                            gd: gd,
+                            goal: plat.isGoal,
+                            top: n[1] > 0,
                             d: avgD,
                             pts: clipped.map(([X, Y, D]) => [W / 2 + f * X / D, H / 2 - f * Y / D]),
                             rgb
                         });
                     }
                 }
-                faces.sort((a, b) => b.d - a.d);
+                faces.sort((a, b) => (b.gd - a.gd) || (b.d - a.d));
+                const t = performance.now() / 1000;
                 for (const fc of faces) {
                     const col = `rgb(${fc.rgb.map(v => Math.round(v)).join(',')})`;
+                    const edge = `rgb(${fc.rgb.map(v => Math.round(v * 0.72)).join(',')})`;
                     ctx.beginPath();
                     fc.pts.forEach((q, i) => i === 0 ? ctx.moveTo(q[0], q[1]) : ctx.lineTo(q[0], q[1]));
                     ctx.closePath();
                     ctx.fillStyle = col;
                     ctx.fill();
-                    ctx.strokeStyle = col;
-                    ctx.lineWidth = 0.8;
+                    if (fc.goal) {
+                        const pulse = 0.5 + 0.5 * Math.sin(t * 4);
+                        ctx.strokeStyle = `rgba(250, 204, 21, ${0.5 + 0.5 * pulse})`;
+                        ctx.lineWidth = 2.5;
+                    } else {
+                        ctx.strokeStyle = edge;
+                        ctx.lineWidth = fc.top ? 1.2 : 0.9;
+                    }
+                    ctx.lineJoin = 'round';
                     ctx.stroke();
                 }
             };
@@ -2500,6 +2519,8 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
             let vx = 0, vy = 0, vz = 0;
             let yaw = 0, pitch = 0;
             let canJump = false;
+            let coyote = 0, jumpBuf = 0;
+            let safe = { x: 0, y: 0.5, z: 0 }; // 마지막으로 밟은 발판 (낙사 복귀 지점)
             const pSize = 0.4;   // 플레이어 반경 (AABB)
             const pHeight = 1.6; // 플레이어 키
            
@@ -2547,6 +2568,7 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
                 goal = addPlatform(curX, curY, curZ, 8, 1, 8, 0xfacc15, true);
 
                 // 플레이어 초기화
+                safe = { x: 0, y: 0.5, z: 0 };
                 px = 0; py = 3; pz = 0;
                 vx = 0; vy = 0; vz = 0;
                 yaw = 0; pitch = 0;
@@ -2554,7 +2576,10 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
 
             // 4. 입력 처리 (키보드 & 마우스 잠금)
             const keys = {};
-            const keydown = (e) => keys[e.code] = true;
+            const keydown = (e) => {
+                if (e.code === 'Space' && !keys[e.code]) jumpBuf = 6;
+                keys[e.code] = true;
+            };
             const keyup = (e) => keys[e.code] = false;
             window.addEventListener('keydown', keydown);
             window.addEventListener('keyup', keyup);
@@ -2647,7 +2672,7 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
                 // 점프 버튼
                 jumpBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
-                    if(canJump) { vy = 0.35; canJump = false; }
+                    jumpBuf = 6;
                     jumpBtn.classList.add('bg-white/30');
                 }, {passive: false});
                 jumpBtn.addEventListener('touchend', (e) => {
@@ -2688,95 +2713,113 @@ const mountBus = (container) => { // ◀ 인자 이름을 container로 수정했
                 gameContainerUI.addEventListener('touchcancel', lookEnd);
             }
 
-            // 6. 메인 루프 (물리 & 렌더링)
+            // 6. 메인 루프 (고정 시간 물리 60Hz + 렌더링)
             let reqId;
             let gameState = 'playing';
+            const STEP = 1 / 60;
+            let stepAcc = 0;
+            let lastNow = null;
 
-            const loop = () => {
-                if (startOverlay.classList.contains('hidden') && gameState === 'playing') {
-                    // 키보드/조이스틱 입력 백터
-                    let moveZ = 0, moveX = 0;
-                    if(keys['KeyW'] || keys['ArrowUp']) moveZ -= 1;
-                    if(keys['KeyS'] || keys['ArrowDown']) moveZ += 1;
-                    if(keys['KeyA'] || keys['ArrowLeft']) moveX -= 1;
-                    if(keys['KeyD'] || keys['ArrowRight']) moveX += 1;
+            const stepPhysics = () => {
+                // 입력 벡터
+                let moveZ = 0, moveX = 0;
+                if (keys['KeyW'] || keys['ArrowUp']) moveZ -= 1;
+                if (keys['KeyS'] || keys['ArrowDown']) moveZ += 1;
+                if (keys['KeyA'] || keys['ArrowLeft']) moveX -= 1;
+                if (keys['KeyD'] || keys['ArrowRight']) moveX += 1;
+                if (isTouch) { moveX += joyX; moveZ += joyY; }
+                const len = Math.hypot(moveX, moveZ);
+                if (len > 1) { moveX /= len; moveZ /= len; }
 
-                    if(isTouch) { moveX += joyX; moveZ += joyY; }
+                // 시선(yaw) 기준 가속: 지면은 빠르게, 공중은 약하게
+                const s = Math.sin(yaw), c = Math.cos(yaw);
+                const accel = canJump ? 0.015 : 0.008;
+                vx += (moveX * c + moveZ * s) * accel;
+                vz += (-moveX * s + moveZ * c) * accel;
+                const fr = canJump ? 0.8 : 0.97;
+                vx *= fr; vz *= fr;
+                const maxH = 0.16;
+                const hv = Math.hypot(vx, vz);
+                if (hv > maxH) { vx *= maxH / hv; vz *= maxH / hv; }
 
-                    const len = Math.sqrt(moveX*moveX + moveZ*moveZ);
-                    if(len > 0) { moveX /= len; moveZ /= len; }
+                // 점프: 입력 버퍼(6스텝) + 코요테 타임(6스텝)
+                if (jumpBuf > 0) jumpBuf--;
+                if (canJump) coyote = 6; else if (coyote > 0) coyote--;
+                if (jumpBuf > 0 && coyote > 0) {
+                    vy = 0.36; canJump = false; coyote = 0; jumpBuf = 0;
+                }
 
-                    // 카메라가 바라보는 방향 기준(yaw)으로 이동 가속도 적용
-                    const speed = 0.015; // 가속도
-                    const s = Math.sin(yaw), c = Math.cos(yaw);
-                    const accX = (moveX * c + moveZ * s) * speed;
-                    const accZ = (-moveX * s + moveZ * c) * speed;
+                // 중력 및 이동
+                vy -= 0.018;
+                const prevFeet = py - pHeight / 2;
+                const prevHead = py + pHeight / 2;
+                px += vx; py += vy; pz += vz;
 
-                    vx += accX;
-                    vz += accZ;
+                // 충돌: 착지 / 천장 / 옆면
+                canJump = false;
+                let onGoal = false;
+                for (const plat of platforms) {
+                    const overlapXZ = px + pSize > plat.minX && px - pSize < plat.maxX &&
+                                      pz + pSize > plat.minZ && pz - pSize < plat.maxZ;
+                    if (!overlapXZ) continue;
+                    const feet = py - pHeight / 2, head = py + pHeight / 2;
 
-                    // 마찰력 (공중에서는 덜 미끄러짐)
-                    const friction = canJump ? 0.8 : 0.95;
-                    vx *= friction;
-                    vz *= friction;
-
-                    // 점프 (키보드)
-                    if(keys['Space'] && canJump) {
-                        vy = 0.35; // 점프력
-                        canJump = false;
-                    }
-
-                    // 중력 적용
-                    vy -= 0.015;
-
-                    px += vx; py += vy; pz += vz;
-
-                    // AABB 충돌 처리
-                    canJump = false;
-                    let onGoal = false;
-                    for(let plat of platforms) {
-                        // X, Z축 겹침 확인
-                        if(px + pSize > plat.minX && px - pSize < plat.maxX &&
-                           pz + pSize > plat.minZ && pz - pSize < plat.maxZ) {
-                           
-                            // 위에서 아래로 떨어질 때 (바닥 충돌)
-                            if(vy <= 0 && py - pHeight/2 >= plat.maxY + vy - 0.2 && py - pHeight/2 <= plat.maxY + 0.2) {
-                                py = plat.maxY + pHeight/2;
-                                vy = 0;
-                                canJump = true;
-                                if(plat.isGoal) onGoal = true;
-                            }
-                            // 아래서 위로 올라갈 때 (천장 충돌)
-                            else if(vy > 0 && py + pHeight/2 <= plat.minY + vy + 0.2 && py + pHeight/2 >= plat.minY - 0.2) {
-                                py = plat.minY - pHeight/2;
-                                vy = 0;
-                            }
-                        }
-                    }
-
-                    // 카메라 업데이트 (1인칭 시점)
-                    camState.x = px; camState.y = py + pHeight/2 - 0.2; camState.z = pz;
-
-                    // 낙사 처리
-                    if(py < -15) {
-                        px = 0; py = 3; pz = 0;
-                        vx = 0; vy = 0; vz = 0;
-                    }
-
-                    // 클리어 처리
-                    if(onGoal) {
-                        gameState = 'clear';
-                        document.getElementById('jump3d-msg').classList.remove('hidden');
-                        setTimeout(() => {
-                            level++;
-                            document.getElementById('jump3d-level').textContent = level;
-                            buildLevel(level);
-                            gameState = 'playing';
-                            document.getElementById('jump3d-msg').classList.add('hidden');
-                        }, 2000);
+                    if (vy <= 0 && prevFeet >= plat.maxY - 0.01 && feet <= plat.maxY + 0.05) {
+                        py = plat.maxY + pHeight / 2;
+                        vy = 0;
+                        canJump = true;
+                        safe = { x: plat.x, y: plat.maxY, z: plat.z };
+                        if (plat.isGoal) onGoal = true;
+                    } else if (vy > 0 && prevHead <= plat.minY + 0.01 && head >= plat.minY) {
+                        py = plat.minY - pHeight / 2;
+                        vy = 0;
+                    } else if (feet < plat.maxY - 0.05 && head > plat.minY + 0.05) {
+                        // 옆면: 가장 얕게 파고든 방향으로 밀어냄
+                        const pxL = (px + pSize) - plat.minX, pxR = plat.maxX - (px - pSize);
+                        const pzF = (pz + pSize) - plat.minZ, pzB = plat.maxZ - (pz - pSize);
+                        const m = Math.min(pxL, pxR, pzF, pzB);
+                        if (m === pxL) { px -= pxL; vx = 0; }
+                        else if (m === pxR) { px += pxR; vx = 0; }
+                        else if (m === pzF) { pz -= pzF; vz = 0; }
+                        else { pz += pzB; vz = 0; }
                     }
                 }
 
+                // 낙사: 마지막 발판 위로 복귀
+                if (py < -15) {
+                    px = safe.x; py = safe.y + pHeight / 2 + 0.5; pz = safe.z;
+                    vx = 0; vy = 0; vz = 0;
+                }
+
+                // 클리어
+                if (onGoal && gameState === 'playing') {
+                    gameState = 'clear';
+                    document.getElementById('jump3d-msg').classList.remove('hidden');
+                    setTimeout(() => {
+                        level++;
+                        document.getElementById('jump3d-level').textContent = level;
+                        buildLevel(level);
+                        gameState = 'playing';
+                        document.getElementById('jump3d-msg').classList.add('hidden');
+                    }, 2000);
+                }
+            };
+
+            const loop = (now) => {
+                if (lastNow === null) lastNow = now;
+                const frameMs = Math.min(100, now - lastNow);
+                lastNow = now;
+                const running = startOverlay.classList.contains('hidden') && gameState === 'playing';
+                if (running) {
+                    stepAcc += frameMs / 1000;
+                    while (stepAcc >= STEP && gameState === 'playing') {
+                        stepPhysics();
+                        stepAcc -= STEP;
+                    }
+                    camState.x = px; camState.y = py + pHeight / 2 - 0.2; camState.z = pz;
+                } else {
+                    stepAcc = 0;
+                }
                 drawScene();
                 reqId = requestAnimationFrame(loop);
             };
