@@ -84,6 +84,29 @@
     #game-container {
       height: calc(100vh - 70px);
     }
+
+    /* One UI 톤 (메뉴 카드 중심, 레이아웃 변경 없음) */
+    :root { --oneui-primary: #0A6CFF; }
+    body { background-color: #F2F3F7 !important; }
+    #games-grid > button {
+      border: none !important;
+      border-radius: 28px !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+    }
+    #games-grid > button:hover {
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
+    }
+    #games-grid > button > div:first-child {
+      border-radius: 22px !important;
+    }
+    #menu-screen .bg-indigo-100 {
+      background-color: #E6F0FF !important;
+      border-left-color: var(--oneui-primary) !important;
+      border-radius: 20px !important;
+    }
+    #game-screen > header {
+      border-bottom: 1px solid #ECEEF3 !important;
+    }
   </style>
 
 </head>
@@ -3720,6 +3743,282 @@ const mountW3D = (w3dContainer) => {
     };
 };        
             
+
+// ==========================================
+// 신규 게임 3종 (두더지 / 미로 / 지뢰찾기)
+// ==========================================
+const mountMole = (c) => {
+    c.innerHTML = `
+    <div class="w-full max-w-md mx-auto flex flex-col items-center gap-4 select-none">
+        <div class="flex w-full justify-between items-center px-2 font-bold text-lg">
+            <span>점수 <span id="mole-score">0</span></span>
+            <span>남은 시간 <span id="mole-time">30</span>초</span>
+        </div>
+        <div id="mole-grid" class="grid grid-cols-3 gap-3 w-full"></div>
+        <p id="mole-msg" class="font-bold text-slate-600 h-6"></p>
+        <button id="mole-restart" class="px-6 py-3 rounded-2xl bg-indigo-600 text-white font-bold">다시 하기</button>
+    </div>`;
+
+    const scoreEl = c.querySelector('#mole-score');
+    const timeEl = c.querySelector('#mole-time');
+    const msgEl = c.querySelector('#mole-msg');
+    const restartBtn = c.querySelector('#mole-restart');
+    const grid = c.querySelector('#mole-grid');
+    const cells = [];
+    let score = 0, time = 30, active = -1, moleTimer = null, clock = null;
+
+    for (let i = 0; i < 9; i++) {
+        const b = document.createElement('button');
+        b.className = 'aspect-square rounded-3xl bg-amber-900/70 text-5xl flex items-center justify-center active:scale-95 transition';
+        b.onclick = () => hit(i);
+        grid.appendChild(b);
+        cells.push(b);
+    }
+
+    function show() {
+        cells.forEach((x, i) => { x.textContent = i === active ? '🐹' : ''; });
+    }
+    function popMole() {
+        let next;
+        do { next = Math.floor(Math.random() * 9); } while (next === active && cells.length > 1);
+        active = next;
+        show();
+    }
+    function hit(i) {
+        if (time <= 0 || i !== active) return;
+        score++;
+        scoreEl.textContent = score;
+        active = -1;
+        show();
+    }
+    function end() {
+        clearInterval(moleTimer);
+        clearInterval(clock);
+        active = -1;
+        show();
+        msgEl.textContent = `게임 끝! 최종 점수 ${score}점`;
+        restartBtn.classList.remove('hidden');
+    }
+    function start() {
+        score = 0; time = 30; active = -1;
+        scoreEl.textContent = 0;
+        timeEl.textContent = time;
+        msgEl.textContent = '';
+        restartBtn.classList.add('hidden');
+        show();
+        moleTimer = setInterval(popMole, 700);
+        clock = setInterval(() => {
+            time--;
+            timeEl.textContent = time;
+            if (time <= 0) end();
+        }, 1000);
+    }
+    restartBtn.onclick = start;
+    start();
+
+    return () => { clearInterval(moleTimer); clearInterval(clock); };
+};
+
+const mountMaze = (c) => {
+    c.innerHTML = `
+    <div class="flex flex-col items-center gap-4 w-full max-w-md mx-auto">
+        <canvas id="maze-canvas" width="330" height="330" class="w-full max-w-[330px] aspect-square bg-white rounded-2xl shadow"></canvas>
+        <div class="grid grid-cols-3 gap-2 w-44">
+            <span></span>
+            <button data-d="up" class="mz-btn p-3 bg-white rounded-xl shadow font-bold">▲</button>
+            <span></span>
+            <button data-d="left" class="mz-btn p-3 bg-white rounded-xl shadow font-bold">◀</button>
+            <span></span>
+            <button data-d="right" class="mz-btn p-3 bg-white rounded-xl shadow font-bold">▶</button>
+            <span></span>
+            <button data-d="down" class="mz-btn p-3 bg-white rounded-xl shadow font-bold">▼</button>
+            <span></span>
+        </div>
+        <p id="maze-msg" class="font-bold text-slate-600 h-6"></p>
+        <button id="maze-new" class="px-6 py-3 rounded-2xl bg-indigo-600 text-white font-bold">새 미로</button>
+    </div>`;
+
+    const cv = c.querySelector('#maze-canvas');
+    const ctx = cv.getContext('2d');
+    const msgEl = c.querySelector('#maze-msg');
+    const W = 11, H = 11, S = cv.width / W;
+    let cells, px, py;
+
+    function gen() {
+        cells = [];
+        for (let y = 0; y < H; y++) {
+            cells.push([]);
+            for (let x = 0; x < W; x++) cells[y].push({ n: 1, s: 1, e: 1, w: 1, v: false });
+        }
+        const stack = [[0, 0]];
+        cells[0][0].v = true;
+        while (stack.length) {
+            const [x, y] = stack[stack.length - 1];
+            const opts = [];
+            if (y > 0 && !cells[y - 1][x].v) opts.push([x, y - 1, 'n', 's']);
+            if (y < H - 1 && !cells[y + 1][x].v) opts.push([x, y + 1, 's', 'n']);
+            if (x > 0 && !cells[y][x - 1].v) opts.push([x - 1, y, 'w', 'e']);
+            if (x < W - 1 && !cells[y][x + 1].v) opts.push([x + 1, y, 'e', 'w']);
+            if (!opts.length) { stack.pop(); continue; }
+            const [nx, ny, d, od] = opts[Math.floor(Math.random() * opts.length)];
+            cells[y][x][d] = 0;
+            cells[ny][nx][od] = 0;
+            cells[ny][nx].v = true;
+            stack.push([nx, ny]);
+        }
+        px = 0; py = 0;
+        msgEl.textContent = '';
+        draw();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        ctx.fillStyle = '#bbf7d0';
+        ctx.fillRect((W - 1) * S + 3, (H - 1) * S + 3, S - 6, S - 6);
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+            const c0 = cells[y][x], x0 = x * S, y0 = y * S;
+            ctx.beginPath();
+            if (c0.n) { ctx.moveTo(x0, y0); ctx.lineTo(x0 + S, y0); }
+            if (c0.w) { ctx.moveTo(x0, y0); ctx.lineTo(x0, y0 + S); }
+            if (c0.s) { ctx.moveTo(x0, y0 + S); ctx.lineTo(x0 + S, y0 + S); }
+            if (c0.e) { ctx.moveTo(x0 + S, y0); ctx.lineTo(x0 + S, y0 + S); }
+            ctx.stroke();
+        }
+        ctx.fillStyle = '#3b82f6';
+        ctx.beginPath();
+        ctx.arc(px * S + S / 2, py * S + S / 2, S * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function move(d) {
+        const map = { up: [0, -1, 'n'], down: [0, 1, 's'], left: [-1, 0, 'w'], right: [1, 0, 'e'] };
+        const m = map[d];
+        if (!m) return;
+        if (cells[py][px][m[2]]) return;
+        px += m[0]; py += m[1];
+        if (px === W - 1 && py === H - 1) msgEl.textContent = '🎉 탈출 성공!';
+        draw();
+    }
+
+    const keyMap = {
+        ArrowUp: 'up', w: 'up', W: 'up',
+        ArrowDown: 'down', s: 'down', S: 'down',
+        ArrowLeft: 'left', a: 'left', A: 'left',
+        ArrowRight: 'right', d: 'right', D: 'right'
+    };
+    const onKey = (e) => {
+        const d = keyMap[e.key];
+        if (!d) return;
+        e.preventDefault();
+        move(d);
+    };
+    window.addEventListener('keydown', onKey);
+    c.querySelectorAll('.mz-btn').forEach(b => b.onclick = () => move(b.dataset.d));
+    c.querySelector('#maze-new').onclick = gen;
+    gen();
+
+    return () => window.removeEventListener('keydown', onKey);
+};
+
+const mountMinesweeper = (c) => {
+    const N = 8, M = 10;
+    c.innerHTML = `
+    <div class="w-full max-w-md mx-auto flex flex-col items-center gap-4 select-none">
+        <div class="flex w-full justify-between items-center px-2 font-bold">
+            <span>남은 지뢰 <span id="ms-left">${M}</span></span>
+            <button id="ms-flag" class="px-4 py-2 rounded-xl bg-white border font-bold">🚩 깃발 모드: 끔</button>
+        </div>
+        <div id="ms-grid" class="grid gap-1 w-full" style="grid-template-columns: repeat(${N}, minmax(0, 1fr));"></div>
+        <p id="ms-msg" class="font-bold text-slate-600 h-6"></p>
+        <button id="ms-restart" class="px-6 py-3 rounded-2xl bg-indigo-600 text-white font-bold">새 게임</button>
+    </div>`;
+
+    const grid = c.querySelector('#ms-grid');
+    const leftEl = c.querySelector('#ms-left');
+    const msgEl = c.querySelector('#ms-msg');
+    const flagBtn = c.querySelector('#ms-flag');
+    const cells = [];
+    let mines, opened, flags, flagMode = false, done = false;
+
+    for (let i = 0; i < N * N; i++) {
+        const b = document.createElement('button');
+        b.className = 'aspect-square rounded-md text-sm font-bold bg-slate-300 hover:bg-slate-200 active:scale-95 transition';
+        b.onclick = () => click(i);
+        grid.appendChild(b);
+        cells.push(b);
+    }
+
+    function neighbors(i) {
+        const r = Math.floor(i / N), col = i % N, out = [];
+        for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+            if (!dr && !dc) continue;
+            const rr = r + dr, cc = col + dc;
+            if (rr >= 0 && rr < N && cc >= 0 && cc < N) out.push(rr * N + cc);
+        }
+        return out;
+    }
+    function count(i) { return neighbors(i).filter(j => mines.has(j)).length; }
+    function reveal(i) {
+        if (opened[i] || flags[i]) return;
+        opened[i] = true;
+        if (!mines.has(i) && count(i) === 0) neighbors(i).forEach(reveal);
+    }
+    function render() {
+        cells.forEach((b, i) => {
+            if (opened[i]) {
+                b.className = 'aspect-square rounded-md text-sm font-bold bg-white border border-slate-200';
+                if (mines.has(i)) b.textContent = '💣';
+                else { const n = count(i); b.textContent = n || ''; b.style.color = ['', '#2563eb', '#16a34a', '#dc2626', '#7c3aed', '#9a3412', '#0891b2', '#000', '#6b7280'][n] || ''; }
+            } else {
+                b.className = 'aspect-square rounded-md text-sm font-bold bg-slate-300 hover:bg-slate-200 active:scale-95 transition';
+                b.textContent = flags[i] ? '🚩' : '';
+                b.style.color = '';
+            }
+        });
+        leftEl.textContent = M - flags.filter(Boolean).length;
+    }
+    function lose() {
+        done = true;
+        mines.forEach(i => { opened[i] = true; });
+        msgEl.textContent = '💥 지뢰를 밟았어요!';
+        render();
+    }
+    function checkWin() {
+        if (opened.filter(Boolean).length === N * N - M) {
+            done = true;
+            msgEl.textContent = '🎉 모든 지뢰를 피했어요!';
+        }
+    }
+    function click(i) {
+        if (done || opened[i]) return;
+        if (flagMode) { flags[i] = !flags[i]; render(); return; }
+        if (flags[i]) return;
+        if (mines.has(i)) { lose(); return; }
+        reveal(i);
+        checkWin();
+        render();
+    }
+    function init() {
+        mines = new Set();
+        while (mines.size < M) mines.add(Math.floor(Math.random() * N * N));
+        opened = Array(N * N).fill(false);
+        flags = Array(N * N).fill(false);
+        done = false;
+        msgEl.textContent = '';
+        render();
+    }
+    flagBtn.onclick = () => {
+        flagMode = !flagMode;
+        flagBtn.textContent = `🚩 깃발 모드: ${flagMode ? '켬' : '끔'}`;
+    };
+    c.querySelector('#ms-restart').onclick = init;
+    init();
+    return () => {};
+};
+
         // ==========================================
         // 메인 데이터 & 라우팅 (전체 28개 게임 - 한글/영어/숫자순 정렬)
         // ==========================================
@@ -3731,7 +4030,9 @@ const mountW3D = (w3dContainer) => {
   { id: 'fruit', title: '과일 받기', icon: 'apple', color: 'bg-red-100 text-red-600', mount: mountFruit },
   { id: 'fps', title: '김밥천국 타이쿤', icon: 'store', color: 'bg-emerald-100 text-emerald-700', mount: mountFps },
   { id: 'typing', title: '단어 타자', icon: 'keyboard', color: 'bg-cyan-100 text-cyan-700', mount: mountTyping },
+  { id: 'mole', title: '두더지 잡기', icon: 'hammer', color: 'bg-amber-100 text-amber-800', mount: mountMole },
   { id: 'gather', title: '먹이 줍기', icon: 'cookie', color: 'bg-yellow-100 text-yellow-800', mount: mountGather },
+  { id: 'maze', title: '미로 탈출', icon: 'route', color: 'bg-indigo-100 text-indigo-700', mount: mountMaze },
   { id: 'reaction', title: '반응속도', icon: 'zap', color: 'bg-violet-100 text-violet-700', mount: mountReaction },
   { id: 'breakout', title: '벽돌 깨기', icon: 'brick-wall', color: 'bg-orange-100 text-orange-600', mount: mountBreakout },
   { id: 'math', title: '산수 퀴즈', icon: 'calculator', color: 'bg-blue-100 text-blue-600', mount: mountMath },
@@ -3742,6 +4043,7 @@ const mountW3D = (w3dContainer) => {
   { id: 'penalty', title: '승부차기', icon: 'goal', color: 'bg-sky-100 text-sky-700', mount: mountPenaltyKick },
   { id: 'cityfighterContainer', title: '시티 브롤', icon: 'swords', color: 'bg-red-100 text-red-700', mount: mountCityfighter },
   { id: 'motorcycle', title: '오토바이 3D', icon: 'bike', color: 'bg-teal-100 text-teal-700', mount: mountMotorcycle },
+  { id: 'minesweeper', title: '지뢰 찾기', icon: 'flag', color: 'bg-neutral-200 text-neutral-800', mount: mountMinesweeper },
   { id: 'baseballgameContainer', title: '진짜 야구', icon: 'trophy', color: 'bg-blue-100 text-blue-800', mount: mountBaseballgame },
   { id: 'memory', title: '카드 맞추기', icon: 'brain-circuit', color: 'bg-pink-100 text-pink-600', mount: mountMemory },
   { id: 'chatContainer', title: '커뮤니티', icon: 'message-square-text', color: 'bg-lime-100 text-lime-800', mount: mountChats },
@@ -3766,9 +4068,9 @@ const mountW3D = (w3dContainer) => {
   { id: 'ricejump3Container', title: 'RiceJump', icon: 'castle', color: 'bg-rose-100 text-rose-700', mount: mountRicejump3 },
 
   // 3. 숫자 (오름차순)
+  { id: 'jump3d', title: '3D 점프맵', icon: 'layers', color: 'bg-fuchsia-100 text-fuchsia-700', mount: mount3DJumpMap },
   { id: 'clicker', title: '10초 광클', icon: 'mouse-pointer-click', color: 'bg-sky-100 text-sky-600', mount: mountClicker },
-  { id: '2048', title: '2048', icon: 'layout-grid', color: 'bg-orange-100 text-orange-600', mount: mount2048 },
-  { id: 'jump3d', title: '3D 점프맵', icon: 'layers', color: 'bg-fuchsia-100 text-fuchsia-700', mount: mount3DJumpMap }
+  { id: '2048', title: '2048', icon: 'layout-grid', color: 'bg-orange-100 text-orange-600', mount: mount2048 }
 ];
 
 
